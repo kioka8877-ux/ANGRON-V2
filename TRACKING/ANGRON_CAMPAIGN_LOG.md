@@ -5,6 +5,18 @@
 
 ---
 
+## ÉTAT DU CODEBASE
+
+| Frigate | Script principal | Statut build |
+|---------|-----------------|--------------|
+| F01_SANGUIS | `sanguis.py` | EN COURS |
+| F02_LACERAT | `lacerat.py` | EN COURS |
+| F03_CRUOR | `render.sh` | EN COURS |
+| F04_NAILS | `finish.sh` | DONE — 2026-06-13 |
+| F05_NUCERIA | `nuceria.py` | DONE — 2026-06-13 |
+
+---
+
 ## FORMAT D'ENTRÉE
 
 ```
