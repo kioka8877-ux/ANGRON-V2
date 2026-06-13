@@ -67,4 +67,4 @@ F05_NUCERIA/OUT/   → ./outputs/         youtube_short/longform_XXX.mp4
 | F05→outputs | `nuceria.py` (F05) — `--output` arg | DONE — 2026-06-13 |
 | F02→F03 (prompt+timestamps) | `render.sh` (F03) — `--scene` arg | DONE — 2026-06-13 |
 | F01→F02 (script) | `whisper_sync.py` (F02) — `--script` arg | DONE — 2026-06-13 |
-| CONCEPT→F01 (script gen) | `sanguis.py` (F01) — EN COURS | EN COURS |
+| CONCEPT→F01 (script gen) | `sanguis.py` (F01) — `--concept` + `--format` args | DONE — 2026-06-13 |
