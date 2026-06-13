@@ -9,7 +9,7 @@
 
 | Frigate | Script principal | Statut build |
 |---------|-----------------|--------------|
-| F01_SANGUIS | `sanguis.py` | EN COURS |
+| F01_SANGUIS | `sanguis.py` | DONE — 2026-06-13 |
 | F02_LACERAT | `whisper_sync.py` | DONE — 2026-06-13 |
 | F03_CRUOR | `render.sh` | DONE — 2026-06-13 |
 | F04_NAILS | `finish.sh` | DONE — 2026-06-13 |
