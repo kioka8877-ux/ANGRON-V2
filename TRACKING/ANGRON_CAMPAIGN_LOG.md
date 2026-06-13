@@ -13,7 +13,7 @@
 - **Format** : Short 9:16 / Long-form 16:9
 - **Concept** : description courte
 - **Durée vidéo** : Xs
-- **Statut** : SANGUIS → LACERAT → CRUOR → NAILS → NUCERIA → UPLOAD → LIVE
+- **Statut** : F01_SANGUIS → F02_LACERAT → F03_CRUOR → F04_NAILS → F05_NUCERIA → UPLOAD → LIVE
 - **Observations** : notes opérateur
 - **Performances** : vues / likes / rétention (à remplir post-upload)
 ```

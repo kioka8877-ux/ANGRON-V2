@@ -30,7 +30,7 @@
 
 | Type | Convention | Exemple |
 |------|-----------|---------|
-| Script SANGUIS | `script_XXX.md` | `script_001.md` |
+| Script F01_SANGUIS | `script_XXX.md` | `script_001.md` |
 | Voix opérateur | `voice_XXX.mp3` | `voice_001.mp3` |
 | Prompt Manim | `prompt_XXX.md` | `prompt_001.md` |
 | Timestamps Whisper | `timestamps_XXX.json` | `timestamps_001.json` |
@@ -46,11 +46,11 @@
 ## TRANSFERTS PAR FRIGATE
 
 ```
-SANGUIS/OUT/   → LACERAT/IN/    script_XXX.md
-LACERAT/IN/    → LACERAT/OUT/   prompt_XXX.md + timestamps_XXX.json
-LACERAT/OUT/   → CRUOR/IN/      prompt_XXX.md + timestamps_XXX.json + assets
-CRUOR/OUT/     → NAILS/IN/      cruor_render_XXX.mp4
-LACERAT/IN/    → NAILS/IN/      voice_XXX.mp3  (audio direct)
-NAILS/OUT/     → NUCERIA/IN/    nails_out_XXX.mp4
-NUCERIA/OUT/   → ./outputs/     youtube_short/longform_XXX.mp4
+F01_SANGUIS/OUT/   → F02_LACERAT/IN/    script_XXX.md
+F02_LACERAT/IN/    → F02_LACERAT/OUT/   prompt_XXX.md + timestamps_XXX.json
+F02_LACERAT/OUT/   → F03_CRUOR/IN/      prompt_XXX.md + timestamps_XXX.json + assets
+F03_CRUOR/OUT/     → F04_NAILS/IN/      cruor_render_XXX.mp4
+F02_LACERAT/IN/    → F04_NAILS/IN/      voice_XXX.mp3  (audio direct)
+F04_NAILS/OUT/     → F05_NUCERIA/IN/    nails_out_XXX.mp4
+F05_NUCERIA/OUT/   → ./outputs/         youtube_short/longform_XXX.mp4
 ```
