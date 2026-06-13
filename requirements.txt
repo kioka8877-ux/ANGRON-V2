@@ -1,0 +1,17 @@
+# ANGRON — Dépendances Python
+
+# Manim
+manim>=0.18.0
+manim-voiceover>=0.3.0
+
+# Whisper (transcription + timestamps)
+openai-whisper>=20231117
+
+# Audio processing
+pydub>=0.25.1
+soundfile>=0.12.1
+
+# Utilitaires
+Pillow>=10.0.0
+numpy>=1.24.0
+scipy>=1.11.0

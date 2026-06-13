@@ -1,0 +1,41 @@
+{
+  "version": "2.0",
+  "flotte": "ANGRON",
+  "primärque": "World Eaters — XIIème Légion",
+  "charte": "ANGRON_STYLE_v1",
+
+  "projet_actif": {
+    "id": null,
+    "concept": null,
+    "format": null,
+    "etape": "INIT",
+    "fichiers": {
+      "script":        null,
+      "audio":         null,
+      "timestamps":    null,
+      "prompt_manim":  null,
+      "assets":        [],
+      "scene_py":      null,
+      "render_brut":   null,
+      "nails_out":     null,
+      "final":         null
+    },
+    "debut": null,
+    "derniere_mise_a_jour": null
+  },
+
+  "historique": [],
+
+  "stats": {
+    "videos_produites": 0,
+    "videos_uploadees": 0,
+    "cycles_complets": 0
+  },
+
+  "instructions_cold_start": [
+    "1. git clone https://github.com/kioka8877-ux/ANGRON",
+    "2. docker pull ghcr.io/kioka8877-ux/angron:latest",
+    "3. Claude lit ce fichier → reprend à l'étape indiquée dans projet_actif.etape",
+    "4. Si etape=INIT → nouveau projet, attendre concept de l'opérateur"
+  ]
+}
