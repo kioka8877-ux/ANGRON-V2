@@ -11,17 +11,18 @@ Usage :
         --output F02_LACERAT/OUT/whisper_timestamps.json \
         --format short
 
-Claude INACTIF pendant l'exécution.
+Claude INACTIF pendant l'exécution. Signal de fin : WHISPER_DONE.txt.
 """
 
 import argparse
 import json
 import re
 import sys
+from datetime import datetime
 from pathlib import Path
 
 
-def parse_script_blocs(script_path: Path) -> list[dict]:
+def parse_script_blocs(script_path: Path) -> list[str]:
     """Extrait les lignes de narration (hors [ANIM:], hors titres markdown)."""
     blocs = []
     text = script_path.read_text(encoding="utf-8")
@@ -38,8 +39,8 @@ def parse_script_blocs(script_path: Path) -> list[dict]:
             continue
         if stripped.startswith("---"):
             continue
-        # Ligne de narration
-        # Nettoie les balises markdown basiques (**bold**, *italic*)
+        if stripped.startswith("**") and stripped.endswith("**"):
+            continue
         clean = re.sub(r"\*{1,2}([^*]+)\*{1,2}", r"\1", stripped)
         if clean:
             blocs.append(clean)
@@ -47,15 +48,12 @@ def parse_script_blocs(script_path: Path) -> list[dict]:
     return blocs
 
 
-def run_whisper(audio_path: Path, model: str = "base") -> list[dict]:
+def run_whisper(audio_path: Path, model: str = "base") -> tuple[list[dict], float]:
     """Lance Whisper et retourne les segments avec timestamps."""
     try:
         import whisper
     except ImportError:
-        print(
-            "[WHISPER] ERREUR : whisper non installé. `pip install openai-whisper`",
-            file=sys.stderr,
-        )
+        print("[WHISPER] ERREUR : whisper non installé. `pip install openai-whisper`", file=sys.stderr)
         sys.exit(1)
 
     print(f"[WHISPER] Chargement modèle '{model}'...")
@@ -78,29 +76,28 @@ def run_whisper(audio_path: Path, model: str = "base") -> list[dict]:
             "end":   round(seg["end"],   3),
         })
 
-    return segments, result.get("segments", [])[-1]["end"] if result.get("segments") else 0.0
+    duree = result["segments"][-1]["end"] if result.get("segments") else 0.0
+    return segments, round(duree, 3)
 
 
-def align_blocs(whisper_segments: list[dict], script_lines: list[str]) -> list[dict]:
+def align_blocs(whisper_segments: list[dict], script_lines: list[str]) -> tuple[list[dict], bool]:
     """
-    Tente d'aligner les segments Whisper avec les lignes de script.
-    Si les comptes divergent, retourne les segments Whisper tels quels
-    (LACERAT alignera manuellement).
+    Tente un alignement 1:1 segments Whisper ↔ lignes script.
+    Si les comptes divergent, retourne Whisper brut — LACERAT aligne manuellement.
     """
     if len(whisper_segments) == len(script_lines):
         aligned = []
         for i, (seg, line) in enumerate(zip(whisper_segments, script_lines)):
             aligned.append({
-                "id":     i + 1,
-                "texte":  line,          # texte script (plus propre)
-                "whisper": seg["texte"], # transcription Whisper pour vérif
-                "start":  seg["start"],
-                "end":    seg["end"],
+                "id":      i + 1,
+                "texte":   line,
+                "whisper": seg["texte"],
+                "start":   seg["start"],
+                "end":     seg["end"],
             })
-        return aligned
+        return aligned, True
 
-    # Compte différent : on retourne Whisper brut, LACERAT aligne
-    return whisper_segments
+    return whisper_segments, False
 
 
 def main() -> None:
@@ -110,13 +107,13 @@ def main() -> None:
     parser.add_argument("--output", required=True, help="whisper_timestamps.json")
     parser.add_argument("--format", default="short", choices=["short", "longform"])
     parser.add_argument("--model",  default="base",
-                        choices=["tiny", "base", "small", "medium", "large"],
-                        help="Modèle Whisper (défaut: base ~150MB)")
+                        choices=["tiny", "base", "small", "medium", "large"])
     args = parser.parse_args()
 
     audio_path  = Path(args.audio)
     script_path = Path(args.script)
     output_path = Path(args.output)
+    done_path   = output_path.parent / "WHISPER_DONE.txt"
 
     if not audio_path.exists():
         print(f"[WHISPER] ERREUR : audio introuvable : {audio_path}", file=sys.stderr)
@@ -128,29 +125,39 @@ def main() -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     script_lines = parse_script_blocs(script_path)
-    print(f"[WHISPER] Script : {len(script_lines)} lignes de narration détectées")
+    print(f"[WHISPER] Script : {len(script_lines)} lignes de narration")
 
     segments, duree_totale = run_whisper(audio_path, model=args.model)
-    print(f"[WHISPER] Segments Whisper : {len(segments)}, durée totale : {duree_totale:.1f}s")
+    print(f"[WHISPER] Segments : {len(segments)}, durée : {duree_totale:.1f}s")
 
-    blocs = align_blocs(segments, script_lines)
-
-    aligned_flag = len(segments) == len(script_lines)
-    print(f"[WHISPER] Alignement : {'AUTO (1:1)' if aligned_flag else 'MANUEL requis par LACERAT'}")
+    blocs, aligned = align_blocs(segments, script_lines)
+    print(f"[WHISPER] Alignement : {'AUTO (1:1)' if aligned else 'MANUEL requis par LACERAT'}")
 
     output = {
-        "version":       "1.0",
-        "audio":         str(audio_path),
-        "script":        str(script_path),
-        "format":        args.format,
-        "duree_totale":  round(duree_totale, 3),
-        "nb_blocs":      len(blocs),
-        "aligned":       aligned_flag,
-        "blocs":         blocs,
+        "version":      "1.0",
+        "audio":        str(audio_path),
+        "script":       str(script_path),
+        "format":       args.format,
+        "duree_totale": duree_totale,
+        "nb_blocs":     len(blocs),
+        "aligned":      aligned,
+        "blocs":        blocs,
     }
 
     output_path.write_text(json.dumps(output, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"[WHISPER] Timestamps → {output_path}")
+
+    done_path.write_text(
+        f"WHISPER_DONE\n"
+        f"audio={audio_path}\n"
+        f"output={output_path}\n"
+        f"nb_blocs={len(blocs)}\n"
+        f"duree_totale={duree_totale}s\n"
+        f"aligned={aligned}\n"
+        f"timestamp={datetime.utcnow().isoformat()}\n",
+        encoding="utf-8",
+    )
+    print(f"[WHISPER] Signal  → {done_path}")
     print(f"[WHISPER] DONE")
 
 
