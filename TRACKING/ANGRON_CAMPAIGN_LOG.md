@@ -53,7 +53,7 @@
 - **Format** : Short 9:16 (1080x1920)
 - **Concept** : Un boxeur court a la même puissance de frappe et plus d'agilité qu'un boxeur grand — la physique le prouve
 - **Durée audio** : 49.37s
-- **Statut** : `PRODUCTION TERMINÉE — EN ATTENTE UPLOAD`
+- **Statut** : `UPLOADED — EN LIGNE`
 - **Fichier final** : `F05_NUCERIA/OUT/youtube_short_001.mp4` (1.73 MB)
 - **QA** : OK — aucun fingerprint détecté
 - **Observations** :
