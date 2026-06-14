@@ -279,7 +279,7 @@ def dispatch() -> None:
     elif etape == "STATE_8":
         nails   = projet["fichiers"].get("nails_out") or f"F04_NAILS/OUT/nails_out_{id_num}.mp4"
         concept = projet.get("concept", "ANGRON")
-        output  = f"outputs/youtube_{fmt}_{id_num}.mp4"
+        output  = f"F05_NUCERIA/OUT/youtube_{fmt}_{id_num}.mp4"
         _run([
             "python3", "F05_NUCERIA/CODEBASE/nuceria.py",
             "--input",   nails,
@@ -288,7 +288,9 @@ def dispatch() -> None:
             "--output",  output,
         ])
         update_state("STATE_9", final=output)
-        commit_ledger(f"ANGRON {pid} — STATE_8 : camouflage NUCERIA terminé")
+        # Archive immediatement — STATE_9 n'a pas de gate, pas de raison d'attendre
+        archive_projet()
+        commit_ledger(f"ANGRON {pid} — production terminée — archivé")
 
     # -----------------------------------------------------------------------
     elif etape == "STATE_9":
