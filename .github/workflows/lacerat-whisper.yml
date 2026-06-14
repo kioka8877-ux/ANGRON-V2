@@ -15,6 +15,12 @@ on:
         description: "Chemin timestamps JSON de sortie"
         required: true
         default: "F02_LACERAT/OUT/whisper_timestamps_001.json"
+      language:
+        description: "Langue audio : auto (detection), en, fr"
+        required: false
+        default: "auto"
+        type: choice
+        options: [auto, en, fr]
       model:
         description: "Modele Whisper"
         required: false
@@ -51,8 +57,7 @@ jobs:
           key: whisper-model-${{ inputs.model }}-v1
 
       - name: Install faster-whisper
-        run: |
-          pip install faster-whisper>=1.0.0
+        run: pip install "faster-whisper>=1.0.0"
 
       - name: Install ffmpeg
         run: sudo apt-get install -y --no-install-recommends ffmpeg
@@ -64,7 +69,13 @@ jobs:
           if [ "${{ inputs.debug }}" = "true" ]; then
             DEBUG_FLAG="--debug"
           fi
-          python3 F02_LACERAT/CODEBASE/whisper_sync.py             --audio  "${{ inputs.audio }}"             --script "${{ inputs.script }}"             --output "${{ inputs.output }}"             --model  "${{ inputs.model }}"             $DEBUG_FLAG
+          python3 F02_LACERAT/CODEBASE/whisper_sync.py \
+            --audio    "${{ inputs.audio }}" \
+            --script   "${{ inputs.script }}" \
+            --output   "${{ inputs.output }}" \
+            --model    "${{ inputs.model }}" \
+            --language "${{ inputs.language }}" \
+            $DEBUG_FLAG
 
       - name: Mettre a jour ledger timestamps
         run: |
@@ -72,12 +83,14 @@ jobs:
 import json, datetime
 with open('.angron/ledger.json') as f:
     l = json.load(f)
-if l['projet_actif']['fichiers'] is not None:
+if l['projet_actif'].get('fichiers') is not None:
     l['projet_actif']['fichiers']['timestamps'] = '${{ inputs.output }}'
     l['projet_actif']['derniere_mise_a_jour'] = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-with open('.angron/ledger.json', 'w') as f:
-    json.dump(l, f, indent=2, ensure_ascii=False)
-print('Ledger timestamps OK')
+    with open('.angron/ledger.json', 'w') as f:
+        json.dump(l, f, indent=2, ensure_ascii=False)
+    print('Ledger timestamps OK')
+else:
+    print('Ledger : aucun projet actif — timestamps non enregistres')
 "
 
       - name: Commit timestamps et ledger
@@ -85,5 +98,5 @@ print('Ledger timestamps OK')
           git config user.name "ANGRON-LACERAT"
           git config user.email "lacerat@angron.bot"
           git add F02_LACERAT/OUT/ .angron/ledger.json
-          git diff --cached --quiet || git commit -m "ANGRON - F02_LACERAT : whisper timestamps produits (${{ inputs.model }})"
+          git diff --cached --quiet || git commit -m "ANGRON - F02_LACERAT : whisper timestamps (${{ inputs.language }} / ${{ inputs.model }})"
           git push
