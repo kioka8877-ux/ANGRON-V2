@@ -57,7 +57,7 @@ Avant tout traitement, vérifie les NOTES LACERAT du script.
 
 Lance `whisper_sync.py` avec le fichier audio :
 ```bash
-python3 CRUOR/CODEBASE/whisper_sync.py \
+python3 F02_LACERAT/CODEBASE/whisper_sync.py \
   --audio F02_LACERAT/IN/voice_XXX.mp3 \
   --script F01_SANGUIS/OUT/script_XXX.md \
   --output F02_LACERAT/OUT/whisper_timestamps.json
