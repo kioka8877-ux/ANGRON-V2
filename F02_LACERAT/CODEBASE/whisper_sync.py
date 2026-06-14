@@ -1,7 +1,7 @@
 """
 whisper_sync.py — F02_LACERAT : extraction des timestamps Whisper.
 
-Utilise faster-whisper (CTranslate2 — pas de torch, léger, rapide).
+Utilise faster-whisper (CTranslate2 — pas de torch, leger, rapide).
 Produit whisper_timestamps.json que LACERAT utilise pour storyboarder.
 
 Usage :
@@ -11,6 +11,7 @@ Usage :
         --output F02_LACERAT/OUT/whisper_timestamps_XXX.json \
         --format short \
         [--model tiny|base|small|medium|large-v3] \
+        [--language en|fr|auto] \
         [--debug]
 
 Requiert : pip install faster-whisper
@@ -47,29 +48,44 @@ def parse_script_blocs(script_path: Path) -> list[str]:
     return blocs
 
 
-def run_whisper(audio_path: Path, model_size: str = "small", debug: bool = False) -> tuple[list[dict], float]:
+def run_whisper(
+    audio_path: Path,
+    model_size: str = "small",
+    language: str | None = None,
+    debug: bool = False,
+) -> tuple[list[dict], float, str]:
     try:
         from faster_whisper import WhisperModel
     except ImportError:
-        print("[WHISPER] ERREUR : faster-whisper non installé.", file=sys.stderr)
+        print("[WHISPER] ERREUR : faster-whisper non installe.", file=sys.stderr)
         print("[WHISPER] → pip install faster-whisper", file=sys.stderr)
         sys.exit(1)
 
-    print(f"[WHISPER] Chargement modèle \'{model_size}\' (cpu / int8)...")
+    # "auto" = laisser Whisper detecter, sinon forcer la langue
+    lang_arg = None if (not language or language == "auto") else language
+
+    print(f"[WHISPER] Chargement modele '{model_size}' (cpu / int8)...")
     model = WhisperModel(model_size, device="cpu", compute_type="int8")
 
     print(f"[WHISPER] Transcription : {audio_path}")
+    if lang_arg:
+        print(f"[WHISPER] Langue forcee : {lang_arg}")
+    else:
+        print("[WHISPER] Langue : detection automatique")
+
     segments_iter, info = model.transcribe(
         str(audio_path),
-        language="en",
+        language=lang_arg,
         word_timestamps=True,
         vad_filter=True,
         vad_parameters={"min_silence_duration_ms": 300},
     )
 
+    detected_lang = info.language
+
     if debug:
-        print(f"[WHISPER][DEBUG] Langue détectée  : {info.language} (proba {info.language_probability:.2f})")
-        print(f"[WHISPER][DEBUG] Durée audio      : {info.duration:.3f}s")
+        print(f"[WHISPER][DEBUG] Langue detectee  : {detected_lang} (proba {info.language_probability:.2f})")
+        print(f"[WHISPER][DEBUG] Duree audio      : {info.duration:.3f}s")
 
     segments = []
     for seg in segments_iter:
@@ -85,13 +101,13 @@ def run_whisper(audio_path: Path, model_size: str = "small", debug: bool = False
             lp_str = f"{lp:.3f}" if lp is not None else "—"
             ns_str = f"{ns:.3f}" if ns is not None else "—"
             print(
-                f"[WHISPER][DEBUG] [{entry[\'start\']:.3f}s → {entry[\'end\']:.3f}s] "
-                f"logprob={lp_str} no_speech={ns_str} | {entry[\'texte\']}"
+                f"[WHISPER][DEBUG] [{entry['start']:.3f}s → {entry['end']:.3f}s] "
+                f"logprob={lp_str} no_speech={ns_str} | {entry['texte']}"
             )
         segments.append(entry)
 
     duree = segments[-1]["end"] if segments else round(info.duration, 3)
-    return segments, duree
+    return segments, duree, detected_lang
 
 
 def align_blocs(
@@ -122,7 +138,7 @@ def align_blocs(
         f"≠ {len(script_lines)} lignes script.",
         file=sys.stderr,
     )
-    print("[WHISPER] Segments bruts transmis — LACERAT fera l\'alignement.", file=sys.stderr)
+    print("[WHISPER] Segments bruts transmis — LACERAT fera l'alignement.", file=sys.stderr)
     return whisper_segments, False
 
 
@@ -135,9 +151,13 @@ def main() -> None:
     parser.add_argument(
         "--model", default="small",
         choices=["tiny", "base", "small", "medium", "large-v3"],
-        help="Modèle Whisper (défaut: small — recommandé pop-science)",
+        help="Modele Whisper (defaut: small)",
     )
-    parser.add_argument("--debug", action="store_true", help="Mode débogage verbose")
+    parser.add_argument(
+        "--language", default="auto",
+        help="Langue audio : en, fr, auto (defaut: auto — detection automatique par Whisper)",
+    )
+    parser.add_argument("--debug", action="store_true", help="Mode debogage verbose")
     args = parser.parse_args()
 
     audio_path  = Path(args.audio)
@@ -153,32 +173,39 @@ def main() -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     if args.debug:
-        print(f"[WHISPER][DEBUG] Audio  : {audio_path} ({audio_path.stat().st_size // 1024} KB)")
-        print(f"[WHISPER][DEBUG] Script : {script_path}")
-        print(f"[WHISPER][DEBUG] Modèle : {args.model}")
-        print(f"[WHISPER][DEBUG] Format : {args.format}")
+        print(f"[WHISPER][DEBUG] Audio   : {audio_path} ({audio_path.stat().st_size // 1024} KB)")
+        print(f"[WHISPER][DEBUG] Script  : {script_path}")
+        print(f"[WHISPER][DEBUG] Modele  : {args.model}")
+        print(f"[WHISPER][DEBUG] Langue  : {args.language}")
+        print(f"[WHISPER][DEBUG] Format  : {args.format}")
 
     script_lines = parse_script_blocs(script_path)
     print(f"[WHISPER] Script : {len(script_lines)} lignes de narration")
 
-    segments, duree_totale = run_whisper(audio_path, model_size=args.model, debug=args.debug)
-    print(f"[WHISPER] Segments : {len(segments)}, durée : {duree_totale:.1f}s")
+    segments, duree_totale, detected_lang = run_whisper(
+        audio_path,
+        model_size=args.model,
+        language=args.language,
+        debug=args.debug,
+    )
+    print(f"[WHISPER] Segments : {len(segments)}, duree : {duree_totale:.1f}s, langue : {detected_lang}")
 
     blocs, aligned = align_blocs(segments, script_lines, debug=args.debug)
-    print(f"[WHISPER] Alignement : {\'AUTO (1:1)\' if aligned else \'MANUEL — LACERAT alignera\'}")
+    print(f"[WHISPER] Alignement : {'AUTO (1:1)' if aligned else 'MANUEL — LACERAT alignera'}")
 
     output = {
-        "version":      "2.0",
-        "engine":       "faster-whisper",
-        "model":        args.model,
-        "language":     "en",
-        "audio":        str(audio_path),
-        "script":       str(script_path),
-        "format":       args.format,
-        "duree_totale": duree_totale,
-        "nb_blocs":     len(blocs),
-        "aligned":      aligned,
-        "blocs":        blocs,
+        "version":         "2.0",
+        "engine":          "faster-whisper",
+        "model":           args.model,
+        "language":        detected_lang,
+        "language_input":  args.language,
+        "audio":           str(audio_path),
+        "script":          str(script_path),
+        "format":          args.format,
+        "duree_totale":    duree_totale,
+        "nb_blocs":        len(blocs),
+        "aligned":         aligned,
+        "blocs":           blocs,
     }
 
     output_path.write_text(json.dumps(output, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -188,7 +215,8 @@ def main() -> None:
         f"WHISPER_DONE\n"
         f"engine=faster-whisper\n"
         f"model={args.model}\n"
-        f"language=en\n"
+        f"language_input={args.language}\n"
+        f"language_detected={detected_lang}\n"
         f"audio={audio_path}\n"
         f"output={output_path}\n"
         f"nb_blocs={len(blocs)}\n"
