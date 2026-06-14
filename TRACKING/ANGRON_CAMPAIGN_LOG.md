@@ -26,6 +26,8 @@
 | `F01_SANGUIS/CODEBASE/sanguis.py` | META_SANGUIS hardcodé inline (version tronquée) | Charge depuis `METAPROMPTS/META_SANGUIS.md` avec fallback |
 | `F02_LACERAT/CODEBASE/lacerat.py` | META_LACERAT hardcodé inline (version tronquée) | Charge depuis `METAPROMPTS/META_LACERAT.md` avec fallback |
 | `METAPROMPTS/META_LACERAT.md` | Chemin bug ligne 617 : `CRUOR/CODEBASE/whisper_sync.py` | Corrigé → `F02_LACERAT/CODEBASE/whisper_sync.py` |
+| `angron.py` | STATE_8 ne appelait pas `archive_projet()` | Auto-archive atomique : STATE_9 + archive en une seule opération |
+| `nuceria-final.yml` | Inline Python fragile pour ledger — pas d'archive | Remplacé par `angron.py update` + `angron.py archive` |
 
 ---
 
@@ -51,13 +53,16 @@
 - **Format** : Short 9:16 (1080x1920)
 - **Concept** : Un boxeur court a la même puissance de frappe et plus d'agilité qu'un boxeur grand — la physique le prouve
 - **Durée audio** : 49.37s
-- **Statut** : `STATE_4_GATE` — storyboard Manim généré, attente validation opérateur
+- **Statut** : `PRODUCTION TERMINÉE — EN ATTENTE UPLOAD`
+- **Fichier final** : `F05_NUCERIA/OUT/youtube_short_001.mp4` (1.73 MB)
+- **QA** : OK — aucun fingerprint détecté
 - **Observations** :
-  - F01 DONE : script_001.md (SANGUIS, session précédente)
-  - Audio TTS fourni par opérateur : 49.37s réelles (cible 45s)
-  - Whisper non disponible en env sandbox — timestamps synthétiques proportionnels (14 blocs)
-  - F02 DONE : prompt_001.md généré (LACERAT via google/gemini-3.1-pro-preview)
-  - Prochain : validation storyboard → lancer F03_CRUOR (scene_001.py)
+  - F01 DONE : script_001.md
+  - F02 DONE : timestamps synthétiques (14 blocs, 49.37s) + prompt_001.md (Gemini 3.1 Pro)
+  - F03 DONE : cruor_render_001.mp4 (568 KB, Manim)
+  - F04 DONE : nails_out_001.mp4 (1.68 MB, FFmpeg fusion audio/vidéo) — 2026-06-14T11:23:24Z
+  - F05 DONE : youtube_short_001.mp4 (1.73 MB, H264 CRF18 + loudnorm + wipe métadonnées) — 2026-06-14T11:42:12Z
+  - Ledger archivé : videos_produites=1, cycles_complets=1
 - **Performances** : — (à remplir post-upload)
 
 ---
@@ -77,7 +82,7 @@
 | `STATE_6_GATE` | Vidéo brute prête — attente validation opérateur |
 | `STATE_7` | NAILS fusion audio/vidéo |
 | `STATE_8` | NUCERIA camouflage |
-| `STATE_9` | Archive + commit final |
+| `STATE_9` | Archive + commit final (automatique) |
 | `UPLOADED` | Vidéo uploadée sur YouTube |
 | `LIVE` | Vidéo en ligne, collecte métriques |
 | `FAILED` | Échec à une étape — voir observations |
