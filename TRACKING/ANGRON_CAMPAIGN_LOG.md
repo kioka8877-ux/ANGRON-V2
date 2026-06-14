@@ -46,12 +46,19 @@
 
 ## LOG
 
-### [ANGRON-001] — EN ATTENTE
-- **Date** : —
-- **Format** : —
-- **Concept** : —
-- **Statut** : `INIT`
-- **Observations** : Premier lancement. Validation de toute la chaîne F01→F05.
+### [ANGRON-001] — BOXE : LE MYTHE DES GÉANTS
+- **Date** : 2026-06-14
+- **Format** : Short 9:16 (1080x1920)
+- **Concept** : Un boxeur court a la même puissance de frappe et plus d'agilité qu'un boxeur grand — la physique le prouve
+- **Durée audio** : 49.37s
+- **Statut** : `STATE_4_GATE` — storyboard Manim généré, attente validation opérateur
+- **Observations** :
+  - F01 DONE : script_001.md (SANGUIS, session précédente)
+  - Audio TTS fourni par opérateur : 49.37s réelles (cible 45s)
+  - Whisper non disponible en env sandbox — timestamps synthétiques proportionnels (14 blocs)
+  - F02 DONE : prompt_001.md généré (LACERAT via google/gemini-3.1-pro-preview)
+  - Prochain : validation storyboard → lancer F03_CRUOR (scene_001.py)
+- **Performances** : — (à remplir post-upload)
 
 ---
 
