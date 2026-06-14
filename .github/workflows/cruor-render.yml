@@ -2,12 +2,13 @@ name: ANGRON - F03_CRUOR Render
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'F03_CRUOR/CODEBASE/scene_001.py'
 
 jobs:
   render:
     runs-on: ubuntu-latest
-    container:
-      image: manimcommunity/manim:stable
 
     permissions:
       contents: write
@@ -16,17 +17,60 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Render Manim headless
+      - name: Cache apt packages
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt/archives
+          key: apt-manim-${{ runner.os }}-v1
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            ffmpeg \
+            libcairo2-dev \
+            libpango1.0-dev \
+            xvfb \
+            texlive-latex-recommended \
+            texlive-fonts-recommended \
+            cm-super \
+            texlive-lang-french \
+            dvipng \
+            fonts-cmu
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-manim-${{ runner.os }}-v1
+
+      - name: Install Manim
+        run: pip install manim==0.18.1
+
+      - name: Start Xvfb
+        run: |
+          Xvfb :99 -screen 0 1920x1080x24 &
+          echo "DISPLAY=:99" >> $GITHUB_ENV
+          sleep 2
+
+      - name: Render scene_001
         run: |
           mkdir -p F03_CRUOR/OUT
-          manim render             --media_dir /tmp/media_cruor             --format mp4             --fps 60             F03_CRUOR/CODEBASE/scene_001.py AngronScene
+          manim render \
+            --media_dir /tmp/media_cruor \
+            --format mp4 \
+            --fps 60 \
+            --resolution 1080,1920 \
+            F03_CRUOR/CODEBASE/scene_001.py \
+            AngronScene
           MP4=$(find /tmp/media_cruor -name "*.mp4" | head -1)
           echo "MP4 trouve : $MP4"
           cp "$MP4" F03_CRUOR/OUT/cruor_render_001.mp4
+          echo "Taille : $(du -sh F03_CRUOR/OUT/cruor_render_001.mp4)"
 
-      - name: Mettre a jour le ledger STATE_6_GATE
+      - name: Mettre a jour ledger STATE_6_GATE
         run: |
-          python3 - <<EOF
+          python3 - <<'EOF'
 import json, datetime
 with open(".angron/ledger.json") as f:
     ledger = json.load(f)
@@ -43,5 +87,6 @@ EOF
           git config user.name "ANGRON-CRUOR"
           git config user.email "cruor@angron.bot"
           git add F03_CRUOR/OUT/cruor_render_001.mp4 .angron/ledger.json
-          git commit -m "ANGRON 001 - STATE_6 : render brut CRUOR produit"
+          git diff --cached --quiet || git commit -m "ANGRON 001 - STATE_6_GATE : render brut CRUOR produit"
           git push
+
