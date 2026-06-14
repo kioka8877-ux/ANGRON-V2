@@ -1,14 +1,15 @@
 """
 lacerat.py — F02_LACERAT : génération du storyboard Manim via Claude.
 
+Charge META_LACERAT depuis METAPROMPTS/META_LACERAT.md.
 Prend le script SANGUIS + les timestamps Whisper + les assets disponibles.
-Appelle Claude avec META_LACERAT comme system prompt.
+Appelle Claude avec ce metaprompt comme system prompt.
 Produit prompt_XXX.md (storyboard Manim complet avec timings).
 
 Usage :
     python3 F02_LACERAT/CODEBASE/lacerat.py \
         --script  F01_SANGUIS/OUT/script_XXX.md \
-        --timestamps F02_LACERAT/OUT/whisper_timestamps.json \
+        --timestamps F02_LACERAT/OUT/whisper_timestamps_XXX.json \
         --id      XXX \
         --format  short|longform \
         --output  F02_LACERAT/OUT/prompt_XXX.md \
@@ -25,149 +26,25 @@ import os
 import sys
 from pathlib import Path
 
-META_LACERAT_SYSTEM = """
+# Chemin du metaprompt — relatif à la racine du dépôt ANGRON
+_META_PATH = Path("METAPROMPTS/META_LACERAT.md")
+
+# Fallback minimal si le fichier est absent
+_META_FALLBACK = """
 Tu es LACERAT, le traducteur tactique de la flotte ANGRON.
 Tu reçois un script humain balisé et tu produis un prompt Manim storyboardé au millimètre.
 Tu ne crées pas — tu traduis. La créativité appartient à SANGUIS.
-Ta précision détermine si CRUOR génère du code fonctionnel ou du chaos.
-
-Règle absolue : chaque bloc du prompt Manim doit pouvoir être exécuté indépendamment
-sans connaître les autres blocs. Pas de références croisées implicites.
-
----
-
-## CATALOGUE DE TRADUCTION [ANIM:] → MANIM
-
-[ANIM: question_apparaît_suspense]
-→ Tex(r"[texte]").move_to(ORIGIN)
-   self.play(AddTextLetterByLetter(texte, time_per_char=0.08))
-   self.wait(whisper_duration - 0.5)
-
-[ANIM: humanoïde_grand_centre_gravité_haut]
-→ SVG humanoïde (height=2.4) avec point CG rouge à y=0.65*height
-   self.play(Create(humanoïde), FadeIn(arrow_cg), run_time=1.5)
-
-[ANIM: humanoïde_court_centre_gravité_bas]
-→ SVG humanoïde (height=1.6) avec point CG vert à y=0.45*height
-   self.play(Create(humanoïde), FadeIn(arrow_cg), run_time=1.5)
-
-[ANIM: équation_apparaît_progressive]
-→ MathTex(r"[équation LaTeX]", color="#FFF1B6", font_size=48)
-   self.play(Write(equation), run_time=whisper_duration * 0.8)
-
-[ANIM: comparaison_côte_à_côte]
-→ Deux VGroup LEFT/RIGHT séparés par DashedLine verticale
-   self.play(FadeIn(gauche), FadeIn(droite), Create(separateur))
-
-[ANIM: courbe_tracée_en_temps_réel]
-→ Axes + axes.plot(lambda x: f(x), color="#58C4DD")
-   self.play(Create(curve), run_time=whisper_duration)
-
-[ANIM: graphe_barres_croissance]
-→ BarChart avec couleurs ANGRON_STYLE
-   self.play(barres.animate.scale(...), run_time=whisper_duration * 0.7)
-
-[ANIM: surbrillance_mot_clé]
-→ mot.animate.set_color("#FFF1B6").scale(1.15), run_time=0.4
-
-[ANIM: titre_frappe_écran]
-→ Tex font_size=72, GrowFromCenter(titre, point_color="#58C4DD"), run_time=0.6
-
-[ANIM: transition_dissolve_suivant]
-→ self.play(FadeOut(Group(*self.mobjects)), run_time=0.8)
-
-[ANIM: zoom_sur_détail]
-→ self.play(self.camera.frame.animate.scale(0.5).move_to(point), run_time=1.2)
-
-[ANIM: vecteur_force_apparaît_sur_corps]
-→ Arrow depuis point d'application, couleur "#FF6D00"
-   self.play(GrowArrow(vecteur), run_time=0.8)
-
-[ANIM: réponse_révélée_dessous]
-→ Rectangle cover sur la réponse, FadeOut(cover), run_time=0.6
-
-[ANIM: photo_opérateur_apparaît asset=XXX.png]
-→ ImageMobject("F02_LACERAT/IN/assets/XXX.png").scale_to_fit_width(3.5)
-   self.play(FadeIn(img), run_time=0.8)
-
-[ANIM: surface_3d_ondulante]
-→ ThreeDScene — Surface(lambda u,v: ...), begin_ambient_camera_rotation(rate=0.2)
-
----
-
-## FORMAT DE SORTIE OBLIGATOIRE
-
-```markdown
-# ANGRON — PROMPT MANIM [ID]
-**Concept :** [titre]
-**Format :** SHORT 9:16 / LONGFORM 16:9
-**Résolution :** 1080x1920 / 1920x1080
-**FPS :** 60
-**Durée audio :** [X.X]s
-**Assets :** [liste ou "aucun"]
-
----
-
-## CHARTE GRAPHIQUE (ANGRON_STYLE v1.0)
-```python
-BG        = "#171717"
-PRIMARY   = "#58C4DD"
-SECONDARY = "#FFF1B6"
-ACCENT    = "#A6CF98"
-TEXT      = "#ECEFF1"
-TEXT_DIM  = "#90A4AE"
-HIGHLIGHT = "#FF6D00"
-FONT      = "CMU Serif"
-STROKE    = 2
-```
-
-## CONFIGURATION SCÈNE
-```python
-config.frame_rate = 60
-config.pixel_width  = 1080   # SHORT | 1920 pour LONGFORM
-config.pixel_height = 1920   # SHORT | 1080 pour LONGFORM
-config.background_color = "#171717"
-```
-
----
-
-## STORYBOARD BLOC PAR BLOC
-
-### BLOC 1 | [Xs → Xs] | [SECTION — description]
-**Texte :** "[texte exact du script]"
-**Directive :** [ANIM: ...]
-**Traduction Manim :**
-```python
-# code Manim auto-suffisant pour ce bloc
-```
-**Timing :** start=X.Xs, end=X.Xs, animation_time=X.Xs, wait=X.Xs
-**Notes :** [notes techniques pour CRUOR]
-
----
-
-### BLOC 2 | ...
-
----
-
-## ASSETS REQUIS
-| Fichier | Usage | Bloc |
-|---------|-------|------|
-
-## NOTES CRUOR
-[imports spéciaux, scène 3D, cas particuliers]
-```
-
----
-
-## RÈGLES CRITIQUES
-
-- self.wait(t) avec t = end - start - animation_runtime (jamais négatif, minimum 0.05)
-- Tout texte via Tex() ou MathTex() — jamais Text() seul
-- run_time explicite sur chaque self.play()
-- Commentaire # BLOC N | Xs → Xs avant chaque bloc
-- Si [ANIM:] contient "3d" ou "surface" → noter ThreeDScene dans NOTES CRUOR
-- La durée totale de tous les blocs doit ≈ duree_totale Whisper ± 2s
+Génère un storyboard bloc par bloc avec timings Whisper, directives Manim et charte ANGRON_STYLE.
 """.strip()
+
+
+def _load_meta() -> str:
+    if _META_PATH.exists():
+        text = _META_PATH.read_text(encoding="utf-8").strip()
+        print(f"[LACERAT] META chargé depuis {_META_PATH}", file=sys.stderr)
+        return text
+    print(f"[LACERAT] AVERTISSEMENT : {_META_PATH} introuvable — fallback minimal utilisé.", file=sys.stderr)
+    return _META_FALLBACK
 
 
 def load_timestamps(ts_path: Path) -> dict:
@@ -177,7 +54,11 @@ def load_timestamps(ts_path: Path) -> dict:
 def list_assets(assets_dir: Path) -> list[str]:
     if not assets_dir.exists():
         return []
-    return [f.name for f in sorted(assets_dir.iterdir()) if f.is_file() and not f.name.startswith(".")]
+    return [
+        f.name
+        for f in sorted(assets_dir.iterdir())
+        if f.is_file() and not f.name.startswith(".")
+    ]
 
 
 def generate_prompt(
@@ -198,9 +79,10 @@ def generate_prompt(
         print("[LACERAT] ERREUR : ANTHROPIC_API_KEY manquant.", file=sys.stderr)
         sys.exit(1)
 
+    meta_system = _load_meta()
     client = anthropic.Anthropic(api_key=api_key)
 
-    fmt_label = "SHORT 9:16 (1080x1920)" if fmt == "short" else "LONGFORM 16:9 (1920x1080)"
+    fmt_label  = "SHORT 9:16 (1080x1920)" if fmt == "short" else "LONGFORM 16:9 (1920x1080)"
     assets_str = "\n".join(f"  - {a}" for a in assets) if assets else "  (aucun)"
 
     user_message = (
@@ -212,12 +94,12 @@ def generate_prompt(
         "Génère le storyboard Manim complet selon le format ANGRON."
     )
 
-    print(f"[LACERAT] Génération storyboard (claude-opus-4-8)...")
+    print(f"[LACERAT] Génération storyboard (claude-opus-4-8)...", file=sys.stderr)
 
     message = client.messages.create(
         model="claude-opus-4-8",
         max_tokens=8192,
-        system=META_LACERAT_SYSTEM,
+        system=meta_system,
         messages=[{"role": "user", "content": user_message}],
     )
 
@@ -227,7 +109,7 @@ def generate_prompt(
 def main() -> None:
     parser = argparse.ArgumentParser(description="LACERAT — storyboard Manim F02")
     parser.add_argument("--script",     required=True, help="script_XXX.md (F01 output)")
-    parser.add_argument("--timestamps", required=True, help="whisper_timestamps.json")
+    parser.add_argument("--timestamps", required=True, help="whisper_timestamps_XXX.json")
     parser.add_argument("--id",         required=True, help="ID projet (ex: 001)")
     parser.add_argument("--format",     required=True, choices=["short", "longform"])
     parser.add_argument("--output",     required=True, help="F02_LACERAT/OUT/prompt_XXX.md")
