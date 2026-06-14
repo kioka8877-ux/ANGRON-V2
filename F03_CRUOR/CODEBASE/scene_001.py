@@ -82,8 +82,8 @@ class AngronScene(Scene):
         line2 = Tex(r"frappent-ils plus fort ?", color=TEXT_C, font_size=52)
         question = VGroup(line1, line2).arrange(DOWN, buff=0.3).move_to(ORIGIN)
 
-        self.play(AddTextLetterByLetter(line1, time_per_char=0.05))
-        self.play(AddTextLetterByLetter(line2, time_per_char=0.05))
+        self.play(AddTextLetterByLetter(line1, time_per_char=0.05), run_time=0.65)
+        self.play(AddTextLetterByLetter(line2, time_per_char=0.05), run_time=0.85)
         self.wait(2.066)
 
     # -----------------------------------------------------------------------
@@ -252,5 +252,5 @@ class AngronScene(Scene):
         outro = VGroup(line1, line2).arrange(DOWN, buff=0.3).move_to(ORIGIN)
 
         self.play(FadeIn(outro, shift=UP), run_time=1.0)
-        self.wait(0.974)
+        self.wait(1.271)
         self.play(FadeOut(Group(*self.mobjects)), run_time=0.8)
