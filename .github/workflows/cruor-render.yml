@@ -1,4 +1,4 @@
-name: ANGRON — F03_CRUOR Render
+name: ANGRON - F03_CRUOR Render
 
 on:
   workflow_dispatch:
@@ -7,10 +7,7 @@ jobs:
   render:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/kioka8877-ux/angron:latest
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      image: manimcommunity/manim:stable
 
     permissions:
       contents: write
@@ -22,17 +19,14 @@ jobs:
       - name: Render Manim headless
         run: |
           mkdir -p F03_CRUOR/OUT
-          Xvfb :99 -screen 0 1x1x24 2>/dev/null &
-          sleep 2
-          manim render             --media_dir /tmp/media_cruor             --format mp4             --fps 60             F03_CRUOR/CODEBASE/scene_001.py AngronScene             2>&1
+          manim render             --media_dir /tmp/media_cruor             --format mp4             --fps 60             F03_CRUOR/CODEBASE/scene_001.py AngronScene
           MP4=$(find /tmp/media_cruor -name "*.mp4" | head -1)
-          echo "MP4 trouvé : $MP4"
+          echo "MP4 trouve : $MP4"
           cp "$MP4" F03_CRUOR/OUT/cruor_render_001.mp4
-          echo "Render OK : F03_CRUOR/OUT/cruor_render_001.mp4"
 
-      - name: Mettre à jour le ledger → STATE_6_GATE
+      - name: Mettre a jour le ledger STATE_6_GATE
         run: |
-          python3 - <<'EOF'
+          python3 - <<EOF
 import json, datetime
 with open(".angron/ledger.json") as f:
     ledger = json.load(f)
@@ -41,13 +35,13 @@ ledger["projet_actif"]["fichiers"]["render_brut"] = "F03_CRUOR/OUT/cruor_render_
 ledger["projet_actif"]["derniere_mise_a_jour"] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 with open(".angron/ledger.json", "w") as f:
     json.dump(ledger, f, indent=2, ensure_ascii=False)
-print("Ledger → STATE_6_GATE")
+print("Ledger STATE_6_GATE OK")
 EOF
 
-      - name: Commit render + ledger
+      - name: Commit render et ledger
         run: |
-          git config user.name  "ANGRON-CRUOR"
+          git config user.name "ANGRON-CRUOR"
           git config user.email "cruor@angron.bot"
           git add F03_CRUOR/OUT/cruor_render_001.mp4 .angron/ledger.json
-          git commit -m "ANGRON 001 — STATE_6 : render brut CRUOR produit"
+          git commit -m "ANGRON 001 - STATE_6 : render brut CRUOR produit"
           git push
