@@ -4,34 +4,29 @@ on:
   workflow_dispatch:
     inputs:
       audio:
-        description: "Chemin fichier audio (ex: F02_LACERAT/IN/voice_001.mp3)"
+        description: "Audio (ex: F02_LACERAT/IN/voice_001.mp3)"
         required: true
-        default: "F02_LACERAT/IN/voice_001.mp3"
+        default: "F02_LACERAT/IN/Generated-Audio-June-14_-2026-8_19AM.mp3"
       script:
-        description: "Chemin script narration (ex: F01_SANGUIS/OUT/script_001.md)"
+        description: "Script (ex: F01_SANGUIS/OUT/script_001.md)"
         required: true
         default: "F01_SANGUIS/OUT/script_001.md"
       output:
-        description: "Chemin timestamps JSON de sortie"
+        description: "Sortie JSON timestamps"
         required: true
         default: "F02_LACERAT/OUT/whisper_timestamps_001.json"
       language:
-        description: "Langue audio : auto (detection), en, fr"
+        description: "Langue : auto, en, fr"
         required: false
         default: "auto"
-        type: choice
-        options: [auto, en, fr]
       model:
-        description: "Modele Whisper"
+        description: "Modele Whisper : tiny, base, small, medium, large-v3"
         required: false
         default: "small"
-        type: choice
-        options: [tiny, base, small, medium, large-v3]
       debug:
-        description: "Mode debug verbose"
+        description: "Debug verbose : true ou false"
         required: false
-        default: false
-        type: boolean
+        default: "false"
 
 jobs:
   whisper:
@@ -56,11 +51,10 @@ jobs:
           path: ~/.cache/huggingface/hub
           key: whisper-model-${{ inputs.model }}-v1
 
-      - name: Install faster-whisper
-        run: pip install "faster-whisper>=1.0.0"
-
-      - name: Install ffmpeg
-        run: sudo apt-get install -y --no-install-recommends ffmpeg
+      - name: Install faster-whisper et ffmpeg
+        run: |
+          sudo apt-get install -y --no-install-recommends ffmpeg
+          pip install "faster-whisper>=1.0.0"
 
       - name: Transcription Whisper
         run: |
@@ -79,19 +73,7 @@ jobs:
 
       - name: Mettre a jour ledger timestamps
         run: |
-          python3 -c "
-import json, datetime
-with open('.angron/ledger.json') as f:
-    l = json.load(f)
-if l['projet_actif'].get('fichiers') is not None:
-    l['projet_actif']['fichiers']['timestamps'] = '${{ inputs.output }}'
-    l['projet_actif']['derniere_mise_a_jour'] = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-    with open('.angron/ledger.json', 'w') as f:
-        json.dump(l, f, indent=2, ensure_ascii=False)
-    print('Ledger timestamps OK')
-else:
-    print('Ledger : aucun projet actif — timestamps non enregistres')
-"
+          python3 -c "import json,datetime; f=open('.angron/ledger.json'); l=json.load(f); f.close(); fichiers=l.get('projet_actif',{}).get('fichiers'); fichiers and fichiers.update({'timestamps':'${{ inputs.output }}'}); l['projet_actif']['derniere_mise_a_jour']=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'); f=open('.angron/ledger.json','w'); json.dump(l,f,indent=2,ensure_ascii=False); f.close(); print('Ledger timestamps OK')"
 
       - name: Commit timestamps et ledger
         run: |
