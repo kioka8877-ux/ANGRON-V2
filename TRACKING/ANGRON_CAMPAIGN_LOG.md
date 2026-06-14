@@ -14,6 +14,18 @@
 | F03_CRUOR | `render.sh` | DONE — 2026-06-13 |
 | F04_NAILS | `finish.sh` | DONE — 2026-06-13 |
 | F05_NUCERIA | `nuceria.py` | DONE — 2026-06-13 |
+| ORCHESTRATEUR | `angron.py` | DONE — 2026-06-14 |
+
+---
+
+## CORRECTIONS APPLIQUÉES — 2026-06-14
+
+| Fichier | Problème | Correction |
+|---------|---------|------------|
+| `angron.py` | Stub minimal — pas d'orchestration réelle | Reconstruit complet : `init`, `update`, `dispatch`, `commit_ledger`, `archive` |
+| `F01_SANGUIS/CODEBASE/sanguis.py` | META_SANGUIS hardcodé inline (version tronquée) | Charge depuis `METAPROMPTS/META_SANGUIS.md` avec fallback |
+| `F02_LACERAT/CODEBASE/lacerat.py` | META_LACERAT hardcodé inline (version tronquée) | Charge depuis `METAPROMPTS/META_LACERAT.md` avec fallback |
+| `METAPROMPTS/META_LACERAT.md` | Chemin bug ligne 617 : `CRUOR/CODEBASE/whisper_sync.py` | Corrigé → `F02_LACERAT/CODEBASE/whisper_sync.py` |
 
 ---
 
@@ -48,11 +60,17 @@
 | Statut | Signification |
 |--------|---------------|
 | `INIT` | Projet créé, aucune frigate lancée |
-| `F01_DONE` | Script validé par l'opérateur |
-| `F02_DONE` | Prompt Manim validé |
-| `F03_DONE` | Vidéo brute validée |
-| `F04_DONE` | Audio fusionné |
-| `F05_DONE` | Camouflage appliqué, MP4 final prêt |
+| `STATE_2` | SANGUIS en cours |
+| `STATE_2_GATE` | Script généré — attente validation opérateur |
+| `STATE_3` | Whisper en cours |
+| `STATE_4` | LACERAT storyboard en cours |
+| `STATE_4_GATE` | Storyboard généré — attente validation opérateur |
+| `STATE_5` | CRUOR génère scene_XXX.py |
+| `STATE_6` | Render Docker en cours |
+| `STATE_6_GATE` | Vidéo brute prête — attente validation opérateur |
+| `STATE_7` | NAILS fusion audio/vidéo |
+| `STATE_8` | NUCERIA camouflage |
+| `STATE_9` | Archive + commit final |
 | `UPLOADED` | Vidéo uploadée sur YouTube |
 | `LIVE` | Vidéo en ligne, collecte métriques |
 | `FAILED` | Échec à une étape — voir observations |
