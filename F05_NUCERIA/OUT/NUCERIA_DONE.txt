@@ -1,6 +1,6 @@
 NUCERIA_DONE
-concept=Boxe le mythe des geants
+concept=Why Lamine trivela is more spectacular than you think
 format=short
-output=F05_NUCERIA/OUT/youtube_short_001.mp4
+output=F05_NUCERIA/OUT/youtube_short_002.mp4
 qa=OK
-timestamp=2026-06-14T11:42:12.442469
+timestamp=2026-06-15T09:31:17.876522
