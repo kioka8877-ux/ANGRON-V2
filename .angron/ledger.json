@@ -10,34 +10,34 @@
     "hook"
   ],
   "projet_actif": {
-    "id": null,
-    "mode": null,
-    "concept": null,
-    "format": null,
-    "etape": "INIT",
+    "id": "003",
+    "mode": "hook",
+    "concept": "Pourquoi la trivela de Lamine est si précise par rapport aux autres joueurs",
+    "format": "short",
+    "etape": "STATE_5",
     "hook": {
       "source_url": null,
-      "hook_ready_path": null,
-      "hook_question": null,
-      "duration_seconds": null
+      "hook_ready_path": "F02_LACERAT/IN/HOOK/hook_ready.mp4",
+      "hook_question": "Why Lamine's trivela is more spectacular than you think",
+      "duration_seconds": 3.7
     },
     "fichiers": {
-      "script": null,
-      "audio": null,
-      "timestamps": null,
-      "scenes_py": null,
+      "script": "F01_SANGUIS/OUT/script_002.md",
+      "audio": "F02_LACERAT/IN/voice_002.mp3",
+      "timestamps": "F02_LACERAT/OUT/whisper_timestamps_002.json",
+      "scenes_py": "F03_CRUOR/CODEBASE/scenes_003.py",
       "renders": [],
       "staged": null,
       "nails_out": null,
       "final": null
     },
     "validations": {
-      "script": false,
-      "scenes": false,
+      "script": true,
+      "scenes": true,
       "render_brut": false
     },
-    "debut": null,
-    "derniere_mise_a_jour": "2026-06-15T09:31:17Z"
+    "debut": "2026-06-15T16:10:00Z",
+    "derniere_mise_a_jour": "2026-06-15T16:10:00Z"
   },
   "historique": [
     {
