@@ -35,7 +35,7 @@ jobs:
         run: |
           SCENES="F03_CRUOR/CODEBASE/scenes_${{ inputs.project_id }}.py"
           OUT_DIR="F03_CRUOR/OUT"
-          STAGED="F03_CRUOR/OUT/staged_${{ inputs.project_id }}.mp4"
+          STAGED="F03_CRUOR/OUT/cruor_render_${{ inputs.project_id }}.mp4"
           mkdir -p "$OUT_DIR"
           bash F03_CRUOR/CODEBASE/render.sh \
             --scenes  "$SCENES" \
@@ -51,7 +51,7 @@ jobs:
           with open('.angron/ledger.json') as f:
               l = json.load(f)
           pid = "${{ inputs.project_id }}"
-          staged = f"F03_CRUOR/OUT/staged_{pid}.mp4"
+          staged = f"F03_CRUOR/OUT/cruor_render_{pid}.mp4"
           l['projet_actif']['etape'] = 'STATE_6_GATE'
           l['projet_actif']['fichiers']['staged'] = staged
           l['projet_actif']['derniere_mise_a_jour'] = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -64,6 +64,6 @@ jobs:
         run: |
           git config user.name "ANGRON-CRUOR"
           git config user.email "cruor@angron.bot"
-          git add F03_CRUOR/OUT/staged_${{ inputs.project_id }}.mp4 .angron/ledger.json
+          git add F03_CRUOR/OUT/cruor_render_${{ inputs.project_id }}.mp4 .angron/ledger.json
           git diff --cached --quiet || git commit -m "ANGRON ${{ inputs.project_id }} - STATE_6_GATE : render brut CRUOR produit"
           git push
