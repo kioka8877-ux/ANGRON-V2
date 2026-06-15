@@ -14,7 +14,7 @@
     "mode": "hook",
     "concept": "Pourquoi la trivela de Lamine est si précise par rapport aux autres joueurs",
     "format": "short",
-    "etape": "STATE_2",
+    "etape": "STATE_3",
     "hook": {
       "source_url": "https://www.youtube.com/shorts/OEU92TAcf5s",
       "hook_ready_path": "HOOK_STUDIO/OUT/hook_ready.mp4",
@@ -22,28 +22,28 @@
       "duration_seconds": 2.47
     },
     "fichiers": {
-      "script": null,
-      "audio": null,
+      "script": "F01_SANGUIS/OUT/script_002.md",
+      "audio": "F02_LACERAT/IN/voice_002.mp3",
       "timestamps": "F02_LACERAT/OUT/whisper_timestamps_002.json",
-      "scenes_py": null,
+      "scenes_py": "F03_CRUOR/CODEBASE/scenes_002.py",
       "renders": [],
       "staged": null,
       "nails_out": null,
       "final": null
     },
     "validations": {
-      "script": false,
+      "script": true,
       "scenes": false,
       "render_brut": false
     },
     "debut": "2026-06-15T03:18:30Z",
-    "derniere_mise_a_jour": "2026-06-15T08:27:36Z",
+    "derniere_mise_a_jour": "2026-06-15T09:00:00Z",
     "langue": "en"
   },
   "historique": [
     {
       "id": "001",
-      "concept": "Boxe : le mythe des géants — un boxeur court a la même puissance de frappe et plus d agilité qu un boxeur grand",
+      "concept": "Boxe : le mythe des géants",
       "format": "short",
       "mode": "math_script",
       "date": "2026-06-14",
@@ -59,7 +59,7 @@
     "1. git clone https://github.com/kioka8877-ux/ANGRON-V2",
     "2. docker pull ghcr.io/kioka8877-ux/angron-v2:latest",
     "3. Claude lit ce fichier → reprend à l etape + mode indiqués dans projet_actif",
-    "4. Si etape=STATE_6 → python3 angron.py dispatch (lance render.sh manimgl headless)",
+    "4. Si etape=STATE_6 → python3 angron.py dispatch",
     "5. Si mode=hook → vérifier F02_LACERAT/IN/HOOK/hook_ready.mp4 avant STATE_2",
     "6. Référence doc : TRACKING/ANGRON_CAMPAIGN_LOG.md + METAPROMPTS/"
   ],
