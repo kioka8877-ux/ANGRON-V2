@@ -2,6 +2,19 @@ name: ANGRON - F05_NUCERIA Final
 
 on:
   workflow_dispatch:
+    inputs:
+      project_id:
+        description: "ID du projet (ex: 001, 002)"
+        required: true
+        default: "001"
+      concept:
+        description: "Concept de la video (ex: Boxe le mythe des geants)"
+        required: true
+        default: "ANGRON"
+      format:
+        description: "Format : short ou longform"
+        required: false
+        default: "short"
 
 jobs:
   nuceria:
@@ -21,31 +34,30 @@ jobs:
 
       - name: Run nuceria.py
         run: |
+          INPUT="F04_NAILS/OUT/nails_out_${{ inputs.project_id }}.mp4"
+          OUTPUT="F05_NUCERIA/OUT/youtube_${{ inputs.format }}_${{ inputs.project_id }}.mp4"
           mkdir -p F05_NUCERIA/OUT
           python3 F05_NUCERIA/CODEBASE/nuceria.py \
-            --input   F04_NAILS/OUT/nails_out_001.mp4 \
-            --concept "Boxe le mythe des geants" \
-            --format  short \
-            --output  F05_NUCERIA/OUT/youtube_short_001.mp4
+            --input   "$INPUT" \
+            --concept "${{ inputs.concept }}" \
+            --format  "${{ inputs.format }}" \
+            --output  "$OUTPUT"
           ls -lh F05_NUCERIA/OUT/
 
-      - name: Mettre a jour ledger STATE_9
+      - name: Mettre a jour ledger STATE_9 et archiver
         run: |
           python3 angron.py update \
             --state STATE_9 \
-            --final F05_NUCERIA/OUT/youtube_short_001.mp4
-
-      - name: Archiver le cycle dans le ledger
-        run: |
+            --final "F05_NUCERIA/OUT/youtube_${{ inputs.format }}_${{ inputs.project_id }}.mp4"
           python3 angron.py archive
 
       - name: Commit final
         run: |
           git config user.name "ANGRON-NUCERIA"
           git config user.email "nuceria@angron.bot"
-          git add F05_NUCERIA/OUT/youtube_short_001.mp4 \
-                  F05_NUCERIA/OUT/rapport_f05.html \
-                  F05_NUCERIA/OUT/NUCERIA_DONE.txt \
-                  .angron/ledger.json
-          git diff --cached --quiet || git commit -m "ANGRON 001 - cycle complet archivé : youtube_short_001.mp4"
+          git add \
+            "F05_NUCERIA/OUT/youtube_${{ inputs.format }}_${{ inputs.project_id }}.mp4" \
+            F05_NUCERIA/OUT/ \
+            .angron/ledger.json
+          git diff --cached --quiet || git commit -m "ANGRON ${{ inputs.project_id }} - cycle complet archive : youtube_${{ inputs.format }}_${{ inputs.project_id }}.mp4"
           git push
