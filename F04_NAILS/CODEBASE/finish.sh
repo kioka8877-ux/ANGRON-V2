@@ -93,7 +93,7 @@ HOOK_FADED=""
 if [[ "$MODE" == "hook" ]]; then
   HOOK_FADED="$OUTPUT_DIR/hook_faded.mp4"
 
-  # Durée du clip hook pour calculer le fade
+  # Durée du clip hook — utilisée pour fade OUT et pour décaler la voix off
   HOOK_DUR=$(ffprobe -v quiet -show_entries format=duration \
     -of default=noprint_wrappers=1:nokey=1 "$HOOK" 2>/dev/null || echo "5")
   FADE_START=$(echo "$HOOK_DUR - 1" | bc)
@@ -116,14 +116,17 @@ if [[ "$MODE" == "hook" ]]; then
     -c:v libx264 -crf 18 -preset fast \
     "$CONCAT_NO_AUDIO"
 
-  # Fusion concat + voix
+  # Fusion concat + voix — la voix démarre après la fin du clip hook
   if [[ -n "$AUDIO" && -f "$AUDIO" ]]; then
-    echo "[NAILS] Fusion concat + voix..."
+    # Délai en millisecondes = durée hook * 1000
+    HOOK_DUR_MS=$(python3 -c "import math; print(int(math.ceil(float('${HOOK_DUR}') * 1000)))")
+    echo "[NAILS] Fusion concat + voix (délai voix : ${HOOK_DUR}s = ${HOOK_DUR_MS}ms)..."
     ffmpeg -y \
       -i "$CONCAT_NO_AUDIO" \
       -i "$AUDIO" \
+      -filter_complex "[1:a]adelay=${HOOK_DUR_MS}|${HOOK_DUR_MS}[a_delayed]" \
       -map 0:v:0 \
-      -map 1:a:0 \
+      -map "[a_delayed]" \
       -c:v copy \
       -c:a aac -b:a 192k -ar 48000 -ac 2 \
       -shortest \
