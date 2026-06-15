@@ -88,7 +88,7 @@ if [[ "$ALL_SCENES" == "true" ]]; then
         cd /workspace
         manimgl '${SCENES}' \"\$SCENE_CLS\" -w 2>&1
 
-        MP4=\$(find /workspace/media -name \"\${SCENE_CLS}.mp4\" 2>/dev/null | sort | tail -1)
+        MP4=\$(find /workspace/videos -name \"\${SCENE_CLS}.mp4\" 2>/dev/null | sort | tail -1)
         if [[ -z \"\$MP4\" ]]; then
           echo \"ERROR: aucun MP4 pour \$SCENE_CLS\" >&2
           exit 2
@@ -167,7 +167,7 @@ docker run --rm \
     cd /workspace
     manimgl '${SCENES}' '${SCENE_CLASS}' -w 2>&1
 
-    MP4=\$(find /workspace/media -name '${SCENE_CLASS}.mp4' 2>/dev/null | sort | tail -1)
+    MP4=\$(find /workspace/videos -name '${SCENE_CLASS}.mp4' 2>/dev/null | sort | tail -1)
     if [[ -z \"\$MP4\" ]]; then
       echo 'ERROR: aucun MP4 trouvé' >&2
       exit 2
