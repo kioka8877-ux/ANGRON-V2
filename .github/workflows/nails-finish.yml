@@ -11,6 +11,10 @@ on:
         description: "Chemin audio voix (ex: F02_LACERAT/IN/voice_002.mp3)"
         required: true
         default: "F02_LACERAT/IN/Generated-Audio-June-14_-2026-8_19AM.mp3"
+      hook:
+        description: "Chemin hook clip (ex: F02_LACERAT/IN/HOOK/hook_ready.mp4) — requis si mode=hook"
+        required: false
+        default: ""
       mode:
         description: "Mode : math_script, math_no_script, hook"
         required: true
@@ -44,10 +48,15 @@ jobs:
           chmod +x F04_NAILS/CODEBASE/finish.sh
           VIDEO="F03_CRUOR/OUT/cruor_render_${{ inputs.project_id }}.mp4"
           OUTPUT="F04_NAILS/OUT/nails_out_${{ inputs.project_id }}.mp4"
+          HOOK_ARG=""
+          if [[ -n "${{ inputs.hook }}" ]]; then
+            HOOK_ARG="--hook ${{ inputs.hook }}"
+          fi
           bash F04_NAILS/CODEBASE/finish.sh \
-            --video "$VIDEO" \
-            --audio "${{ inputs.audio }}" \
-            --mode  "${{ inputs.mode }}" \
+            --video  "$VIDEO" \
+            --audio  "${{ inputs.audio }}" \
+            $HOOK_ARG \
+            --mode   "${{ inputs.mode }}" \
             --format "${{ inputs.format }}" \
             --output "$OUTPUT"
           ls -lh F04_NAILS/OUT/
@@ -56,14 +65,14 @@ jobs:
         run: |
           python3 -c "
           import json, datetime
-          with open('.angron/ledger.json') as f:
+          with open('\.angron/ledger.json') as f:
               l = json.load(f)
           pid = '${{ inputs.project_id }}'
           output = f'F04_NAILS/OUT/nails_out_{pid}.mp4'
           l['projet_actif']['etape'] = 'STATE_8'
           l['projet_actif']['fichiers']['nails_out'] = output
           l['projet_actif']['derniere_mise_a_jour'] = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-          with open('.angron/ledger.json', 'w') as f:
+          with open('\.angron/ledger.json', 'w') as f:
               json.dump(l, f, indent=2, ensure_ascii=False)
           print('Ledger STATE_8 OK')
           "
@@ -75,3 +84,4 @@ jobs:
           git add F04_NAILS/OUT/nails_out_${{ inputs.project_id }}.mp4 .angron/ledger.json
           git diff --cached --quiet || git commit -m "ANGRON ${{ inputs.project_id }} - STATE_8 : fusion audio+video NAILS OK"
           git push
+
