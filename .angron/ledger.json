@@ -24,7 +24,7 @@
     "fichiers": {
       "script": null,
       "audio": null,
-      "timestamps": null,
+      "timestamps": "F02_LACERAT/OUT/whisper_timestamps_002.json",
       "scenes_py": null,
       "renders": [],
       "staged": null,
@@ -37,7 +37,7 @@
       "render_brut": false
     },
     "debut": "2026-06-15T03:18:30Z",
-    "derniere_mise_a_jour": "2026-06-15T05:00:00Z",
+    "derniere_mise_a_jour": "2026-06-15T08:27:36Z",
     "langue": "en"
   },
   "historique": [
