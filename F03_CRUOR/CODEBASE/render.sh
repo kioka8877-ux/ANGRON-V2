@@ -1,29 +1,12 @@
 #!/usr/bin/env bash
 # render.sh — F03_CRUOR V2 : render manimgl par scène + assemblage via stage.py.
-#
-# Usage (render une scène) :
-#   bash F03_CRUOR/CODEBASE/render.sh \
-#     --scenes   F03_CRUOR/CODEBASE/scenes_XXX.py \
-#     --scene-class HookQuestion \
-#     --output   F03_CRUOR/OUT/01_HookQuestion.mp4 \
-#     --format   short|longform
-#
-# Usage (toutes les scènes + assemblage) :
-#   bash F03_CRUOR/CODEBASE/render.sh \
-#     --scenes  F03_CRUOR/CODEBASE/scenes_XXX.py \
-#     --all \
-#     --out-dir F03_CRUOR/OUT/ \
-#     --staged  F03_CRUOR/OUT/staged_XXX.mp4 \
-#     --format  short|longform
-#
-# Claude INACTIF pendant l'exécution. Signal de fin : DONE.txt (OK ou ERROR).
 
 set -euo pipefail
 
 DOCKER_IMAGE="ghcr.io/kioka8877-ux/angron-v2:latest"
 
 SCENES=""
-SCENE_CLASS=""
+SCFNE_CLASS=""
 OUTPUT=""
 OUT_DIR=""
 STAGED=""
@@ -98,16 +81,14 @@ if [[ "$ALL_SCENES" == "true" ]]; then
       sleep 2
 
       OUT_BASE='/workspace/${OUT_DIR}'
-      MEDIA_DIR='/tmp/media_cruor'
+      STEM=\$(basename '/workspace/${SCENES}' .py)
 
       while IFS= read -r SCENE_CLS; do
         echo \"[CRUOR] Render \$SCENE_CLS...\"
-        rm -rf \"\$MEDIA_DIR\"
-        manimgl '/workspace/${SCENES}' \"\$SCENE_CLS\" \
-          --write_to_movie \
-          --media_dir \"\$MEDIA_DIR\" 2>&1
+        cd /workspace
+        manimgl '${SCENES}' \"\$SCENE_CLS\" -w 2>&1
 
-        MP4=\$(find \"\$MEDIA_DIR\" -name '*.mp4' | sort | tail -1)
+        MP4=\$(find /workspace/media -name \"\${SCENE_CLS}.mp4\" 2>/dev/null | sort | tail -1)
         if [[ -z \"\$MP4\" ]]; then
           echo \"ERROR: aucun MP4 pour \$SCENE_CLS\" >&2
           exit 2
@@ -182,13 +163,11 @@ docker run --rm \
     set -e
     Xvfb :99 -screen 0 1920x1080x24 2>/dev/null &
     sleep 2
-    MEDIA_DIR='/tmp/media_cruor'
 
-    manimgl '/workspace/${SCENES}' '${SCENE_CLASS}' \
-      --write_to_movie \
-      --media_dir \"\$MEDIA_DIR\" 2>&1
+    cd /workspace
+    manimgl '${SCENES}' '${SCENE_CLASS}' -w 2>&1
 
-    MP4=\$(find \"\$MEDIA_DIR\" -name '*.mp4' | sort | tail -1)
+    MP4=\$(find /workspace/media -name '${SCENE_CLASS}.mp4' 2>/dev/null | sort | tail -1)
     if [[ -z \"\$MP4\" ]]; then
       echo 'ERROR: aucun MP4 trouvé' >&2
       exit 2
