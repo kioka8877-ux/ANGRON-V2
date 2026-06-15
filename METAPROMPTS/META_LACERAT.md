@@ -196,51 +196,196 @@ config.background_color = "#171717"
 ## STORYBOARD BLOC PAR BLOC
 
 ### BLOC 1 | [0.0s → 3.2s] | ACCROCHE
-**Texte :** "Pourquoi [Messi] ne tombe jamais ?"
-**Directive originale :** [ANIM: question_apparaît_suspense]
-**Traduction Manim :**
+...
+```
+
+---
+
+## ═══════════════════════════════════════════════════════════
+## LACERAT V2 — MANIMGL + MULTI-SCÈNES (2026-06-15)
+## ═══════════════════════════════════════════════════════════
+
+### IMPORT V2 — OBLIGATOIRE
+
 ```python
-question = Tex(r"Pourquoi \textbf{Messi} ne tombe jamais ?",
-               font_size=52, color=TEXT)
-self.play(AddTextLetterByLetter(question, time_per_char=0.07))
-self.wait(2.5)
-```
-**Timing :** start=0.0, end=3.2, wait=2.5s
-**Notes :** Centré verticalement sur le quart supérieur de l'écran (9:16)
+# V1 (ManimCommunity) — NE PAS UTILISER EN V2
+from manim import *
 
----
-
-### BLOC 2 | [3.2s → 5.8s] | ...
-[même structure]
-
----
-
-## ASSETS REQUIS
-| Fichier | Usage | Bloc |
-|---------|-------|------|
-| asset_001_messi.png | Comparatif | Bloc 3 |
-
-## NOTES CRUOR
-[Notes techniques pour F03 : cas particuliers, imports nécessaires, scènes 3D à noter]
+# V2 (manimgl — fork 3B1B) — OBLIGATOIRE
+from manimlib import *
+# ou si custom/ 3B1B cloné dans Docker :
+from manim_imports_ext import *
 ```
 
+### DIFFÉRENCES API CRITIQUES V1 → V2
+
+| ManimCommunity (V1) | manimgl (V2) | Notes |
+|---------------------|-------------|-------|
+| `MathTex()` | `Tex()` | manimgl unifie texte + math dans Tex() |
+| `Scene` | `InteractiveScene` | classe de base V2 |
+| `config.pixel_height` | `FRAME_HEIGHT` | constante globale |
+| `self.play(Create(x))` | `self.play(ShowCreation(x))` | renommé en manimgl |
+| `AddTextLetterByLetter` | `Write()` letter by letter | vérifier API manimgl |
+| `MovingCameraScene` | `InteractiveScene` avec `self.frame` | unifié |
+| `config.frame_rate = 60` | `self.camera.frame_rate = 60` | dans construct() |
+
+### ARCHITECTURE MULTI-SCÈNES V2
+
+F02_LACERAT génère un fichier `scenes_XXX.py` contenant N classes `InteractiveScene` séparées.
+
+**Règle de découpage :** chaque segment de l'arc 3B1B = 1 classe de scène.
+
+```python
+# V1 : une seule classe Scene
+class FullVideo(Scene):
+    def construct(self): ...
+
+# V2 : N classes InteractiveScene (une par segment arc 3B1B)
+class HookQuestion(InteractiveScene):
+    def construct(self): ...
+
+class EquationReveal(InteractiveScene):
+    def construct(self): ...
+
+class ProblemBeauty(InteractiveScene):
+    def construct(self): ...
+
+class MathAnswer(InteractiveScene):
+    def construct(self): ...
+
+class BodyApplication(InteractiveScene):
+    def construct(self): ...
+```
+
+### NOMMAGE DES RENDERS (OBLIGATOIRE pour stage.py)
+
+F02 doit nommer les scènes dans l'ordre alphabétique numéroté :
+
+```
+01_HookQuestion
+02_EquationReveal
+03_ProblemBeauty
+04_MathAnswer
+05_BodyApplication
+```
+
+Ce nommage garantit que `stage.py` les assemble dans le bon ordre (tri alphabétique).
+
+### PATTERNS MANIMGL POUR LES MARQUEURS [ANIM:] V2
+
+```python
+# [ANIM: plan_initial] — V2
+class HookQuestion(InteractiveScene):
+    def construct(self):
+        # manimgl : Tex() remplace MathTex() et Text()
+        titre = Tex(r"\textbf{Regarde Messi}", font_size=52)
+        titre.set_color(BLUE_D)  # PRIMARY #58C4DD
+        self.play(ShowCreation(titre))  # V2 : ShowCreation != Create
+        self.wait(2)
+
+# [ANIM: equation_tsiolkovsky] — V2
+class EquationReveal(InteractiveScene):
+    def construct(self):
+        equation = Tex(
+            R"\Delta v = v_e \ln\frac{m_0}{m_f}",
+            t2c={
+                R"\Delta v": BLUE_D,
+                "v_e": YELLOW,
+                "m_0": GREEN,
+                "m_f": RED
+            }
+        )
+        self.play(Write(equation))
+        self.wait(2)  # pause cognitive obligatoire
+
+# Mouvement caméra (manimgl)
+frame = self.frame
+self.play(frame.animate.move_to(equation).set_height(3))
+
+# Animation en cascade (manimgl)
+self.play(LaggedStart(*[FadeIn(mob) for mob in group], lag_ratio=0.1))
+
+# Updater dynamique (manimgl)
+dot.add_updater(lambda m: m.move_to(curve.get_end()))
+```
+
+### RESSOURCES 3B1B DISPONIBLES EN V2 (MIT License)
+
+Si le repo `3b1b/videos` est cloné dans le Docker :
+```python
+from custom.characters.pi_creature_scene import *
+from custom.backdrops import *
+from once_useful_constructs.complex_transformation_scene import *
+from once_useful_constructs.linear_algebra import *
+```
+
+### MODE HOOK — GESTION DANS F02_LACERAT
+
+Si `mode = hook` (indiqué dans ledger.json) :
+
+1. Vérifier que `F02_LACERAT/IN/HOOK/hook_ready.mp4` existe
+2. Créer un dossier `F02_LACERAT/IN/HOOK/` si absent
+3. La première scène (`01_HookQuestion`) commence **après** le clip hook
+   → Pas d'animation hook dans scenes_XXX.py — le clip est concaténé par F04_NAILS
+4. Ajouter dans NOTES CRUOR :
+   ```
+   MODE HOOK : les scènes Manim démarrent APRÈS le clip hook.
+   hook_ready.mp4 est concaténé en tête par F04_NAILS.
+   La scène 01_HookQuestion doit répondre à : "[hook_question]"
+   ```
+
+### FORMAT DE SORTIE V2 — scenes_XXX.py
+
+```markdown
+# ANGRON — SCENES V2 [XXX]
+**Concept :** [titre]
+**Format :** SHORT 9:16 / LONGFORM 16:9
+**Mode :** math_script / math_no_script / hook
+**Nb scènes :** N
+**Durée totale cible :** [X.X]s
+
 ---
 
-## RÈGLES DE QUALITÉ LACERAT
+## SCÈNES — INDEX
+
+| Index | Classe | Segment arc | Durée cible |
+|-------|--------|-------------|-------------|
+| 01 | HookQuestion | HOOK ÉMOTIONNEL | 7s |
+| 02 | EquationReveal | BEAUTÉ DU PROBLÈME | 15s |
+| 03 | MathAnswer | INÉVITABILITÉ | 20s |
+| 04 | BodyApplication | APPLICATION INCARNÉE | 10s |
+
+---
+
+## CODE scenes_[XXX].py
+
+[code Python complet]
+```
+
+---
+
+## RÈGLES DE QUALITÉ LACERAT — V2 (MISE À JOUR)
 
 **INTERDIT :**
 - Laisser un bloc avec `wait()` > durée Whisper du bloc (désynchronisation)
 - Utiliser des couleurs autres que celles de ANGRON_STYLE
 - Utiliser `self.play(Transform(...))` sans vérifier que l'objet source existe
 - Référencer un objet créé dans un bloc futur
+- **V2 : utiliser `from manim import *`** (ManimCommunity — incompatible)
+- **V2 : utiliser `MathTex()`** → utiliser `Tex()` en manimgl
+- **V2 : utiliser `Scene`** → utiliser `InteractiveScene`
+- **V2 : utiliser `Create()`** → utiliser `ShowCreation()`
 
 **OBLIGATOIRE :**
 - Chaque `self.wait(t)` doit avoir `t = whisper_bloc_end - whisper_bloc_start - animation_runtime`
-- Tout texte affiché est du LaTeX via `Tex()` ou `MathTex()` — jamais `Text()` seul
+- Tout texte affiché est du LaTeX via `Tex()` — jamais `Text()` seul
 - La police CMU Serif doit être déclarée en config globale
 - Les assets sont référencés par chemin relatif depuis la racine ANGRON
+- **V2 : `from manimlib import *` en tête de chaque fichier**
+- **V2 : N classes `InteractiveScene` nommées `NN_NomScene` dans l'ordre**
+- **V2 : NOTES CRUOR incluent le mapping scène → segment arc 3B1B**
 
 ---
 
-*LACERAT — Flotte ANGRON v1.0*
+*LACERAT — Flotte ANGRON v1.0 / v2.0*
 *"La lame traduit l'ordre en acte."*
