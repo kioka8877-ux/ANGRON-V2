@@ -14,12 +14,12 @@
     "mode": "hook",
     "concept": "Pourquoi la trivela de Lamine est si précise par rapport aux autres joueurs",
     "format": "short",
-    "etape": "STATE_1b",
+    "etape": "STATE_2",
     "hook": {
       "source_url": "https://www.youtube.com/shorts/OEU92TAcf5s",
-      "hook_ready_path": null,
-      "hook_question": "Mais comment une technique de tir apprise dans la rue peut-elle être mathématiquement plus précise que celle des professionnels ?",
-      "duration_seconds": null
+      "hook_ready_path": "HOOK_STUDIO/OUT/hook_ready.mp4",
+      "hook_question": "Why Lamine's trivela is more spectacular than you think",
+      "duration_seconds": 2.47
     },
     "fichiers": {
       "script": null,
@@ -37,7 +37,8 @@
       "render_brut": false
     },
     "debut": "2026-06-15T03:18:30Z",
-    "derniere_mise_a_jour": "2026-06-15T04:24:18Z"
+    "derniere_mise_a_jour": "2026-06-15T05:00:00Z",
+    "langue": "en"
   },
   "historique": [
     {
