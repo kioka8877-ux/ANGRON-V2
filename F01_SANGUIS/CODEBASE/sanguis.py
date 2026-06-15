@@ -7,10 +7,20 @@ Appelle Claude avec ce metaprompt comme system prompt.
 
 Usage :
     python3 F01_SANGUIS/CODEBASE/sanguis.py \
-        --concept "physique du sprint — pourquoi les petits joueurs tiennent mieux l'équilibre" \
+        --concept "physique du sprint" \
         --format short \
-        --id 001 \
-        --output F01_SANGUIS/OUT/script_001.md
+        --mode math_script \
+        --id 002 \
+        --output F01_SANGUIS/OUT/script_002.md
+
+    # Mode hook (avec question obligatoire) :
+    python3 F01_SANGUIS/CODEBASE/sanguis.py \
+        --concept "CR7 courbe la balle" \
+        --format short \
+        --mode hook \
+        --hook-question "Mais comment CR7 peut-il courber la balle comme ça ?" \
+        --id 003 \
+        --output F01_SANGUIS/OUT/script_003.md
 
 Requiert :
     ANTHROPIC_API_KEY dans l'environnement
@@ -22,16 +32,20 @@ import os
 import sys
 from pathlib import Path
 
-# Chemin du metaprompt — relatif à la racine du dépôt ANGRON
 _META_PATH = Path("METAPROMPTS/META_SANGUIS.md")
 
-# Fallback minimal si le fichier est absent
 _META_FALLBACK = """
-Tu es SANGUIS, le cerveau narratif de la flotte ANGRON.
-Ta mission : transformer un concept brut en script viral structuré, prêt à être animé.
-Génère un script au format ANGRON (sections ACCROCHE / TENSION / RÉVÉLATION / CHUTE / CTA)
-avec directives [ANIM:] et métadonnées YouTube.
+Tu es SANGUIS, cerveau narratif de la flotte ANGRON.
+Structure obligatoire V2 — ARC 3B1B pour les Shorts :
+[7s]  HOOK ÉMOTIONNEL — ce que le spectateur ressent déjà
+[8s]  QUESTION QUI FORCE L'ÉCOUTE — "Mais comment X peut-il Y ?"
+[15s] BEAUTÉ DU PROBLÈME — poser l'équation avec élégance, ne pas encore expliquer
+[20s] INÉVITABILITÉ — dérouler le raisonnement, chaque étape évidente en rétroaction
+[10s] APPLICATION INCARNÉE — retour monde réel, fin émotionnelle
+Marqueurs [ANIM:] obligatoires : ex [ANIM: equation_reveal], [ANIM: plan_initial].
 """.strip()
+
+MODES = ["math_script", "math_no_script", "hook"]
 
 
 def _load_meta() -> str:
@@ -43,7 +57,7 @@ def _load_meta() -> str:
     return _META_FALLBACK
 
 
-def generate_script(concept: str, fmt: str, script_id: str) -> str:
+def generate_script(concept: str, fmt: str, mode: str, script_id: str, hook_question: str | None) -> str:
     try:
         import anthropic
     except ImportError:
@@ -59,13 +73,36 @@ def generate_script(concept: str, fmt: str, script_id: str) -> str:
     client = anthropic.Anthropic(api_key=api_key)
 
     fmt_label = "SHORT (≤60 secondes)" if fmt == "short" else "LONGFORM (3-10 minutes)"
+
     user_message = (
-        f"CONCEPT : {concept}\n"
-        f"FORMAT  : {fmt_label}\n"
-        f"ID      : {script_id}\n\n"
-        "Génère le script complet selon le format ANGRON."
+        f"CONCEPT       : {concept}\n"
+        f"FORMAT        : {fmt_label}\n"
+        f"MODE          : {mode}\n"
+        f"ID            : {script_id}\n"
     )
 
+    if mode == "hook":
+        if not hook_question:
+            print("[SANGUIS] ERREUR : --hook-question obligatoire en mode hook.", file=sys.stderr)
+            sys.exit(1)
+        user_message += f"HOOK_QUESTION  : {hook_question}\n"
+        user_message += (
+            "\nInstructions spécifiques mode hook :\n"
+            "- Le segment [7s] HOOK ÉMOTIONNEL doit décrire en 1 phrase choc ce que montre le clip vidéo réel.\n"
+            "- La hook_question doit apparaître mot pour mot dans le segment [8s].\n"
+            "- Les marqueurs [ANIM:] s'intègrent APRÈS le clip hook, pas pendant.\n"
+        )
+    elif mode == "math_no_script":
+        user_message += (
+            "\nInstructions spécifiques mode math_no_script :\n"
+            "- Pas de voix off — les [ANIM:] portent tout le sens.\n"
+            "- Chaque segment du script décrit les visuels, pas un texte parlé.\n"
+            "- Les marqueurs [ANIM:] sont plus nombreux et plus détaillés qu'en mode math_script.\n"
+        )
+
+    user_message += "\nGénère le script complet selon l'arc 3B1B V2 avec tous les marqueurs [ANIM:]."
+
+    print(f"[SANGUIS] Mode   : {mode}", file=sys.stderr)
     print(f"[SANGUIS] Génération script (claude-opus-4-8)...", file=sys.stderr)
 
     message = client.messages.create(
@@ -79,11 +116,15 @@ def generate_script(concept: str, fmt: str, script_id: str) -> str:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="SANGUIS — générateur de script viral F01")
-    parser.add_argument("--concept", required=True, help="Concept brut de la vidéo")
-    parser.add_argument("--format",  required=True, choices=["short", "longform"])
-    parser.add_argument("--id",      required=True, help="ID du projet (ex: 001)")
-    parser.add_argument("--output",  required=True, help="F01_SANGUIS/OUT/script_XXX.md")
+    parser = argparse.ArgumentParser(description="SANGUIS — générateur de script viral F01 V2")
+    parser.add_argument("--concept",       required=True, help="Concept brut de la vidéo")
+    parser.add_argument("--format",        required=True, choices=["short", "longform"])
+    parser.add_argument("--mode",          required=True, choices=MODES,
+                        help="math_script | math_no_script | hook")
+    parser.add_argument("--id",            required=True, help="ID du projet (ex: 002)")
+    parser.add_argument("--output",        required=True, help="F01_SANGUIS/OUT/script_XXX.md")
+    parser.add_argument("--hook-question", default=None,
+                        help="(mode hook) 'Mais comment X peut-il Y ?' — obligatoire si mode=hook")
     args = parser.parse_args()
 
     output_path = Path(args.output)
@@ -91,13 +132,20 @@ def main() -> None:
 
     print(f"[SANGUIS] Concept : {args.concept}")
     print(f"[SANGUIS] Format  : {args.format}")
+    print(f"[SANGUIS] Mode    : {args.mode}")
     print(f"[SANGUIS] ID      : {args.id}")
 
-    script = generate_script(args.concept, args.format, args.id)
+    script = generate_script(
+        concept=args.concept,
+        fmt=args.format,
+        mode=args.mode,
+        script_id=args.id,
+        hook_question=getattr(args, "hook_question", None),
+    )
 
     output_path.write_text(script, encoding="utf-8")
     print(f"[SANGUIS] Script  → {output_path}")
-    print(f"[SANGUIS] DONE — attendre validation opérateur (GATE)")
+    print(f"[SANGUIS] DONE — attendre validation opérateur (STATE_2_GATE)")
 
 
 if __name__ == "__main__":
