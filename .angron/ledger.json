@@ -14,10 +14,10 @@
     "mode": "hook",
     "concept": "Pourquoi la trivela de Lamine est si précise par rapport aux autres joueurs",
     "format": "short",
-    "etape": "STATE_2_GATE",
+    "etape": "STATE_2",
     "hook": {
-      "source_url": null,
-      "hook_ready_path": null,
+      "source_url": "https://www.youtube.com/shorts/OEU92TAcf5s",
+      "hook_ready_path": "F02_LACERAT/IN/HOOK/hook_ready.mp4",
       "hook_question": "Mais comment une technique de tir apprise dans la rue peut-elle être mathématiquement plus précise que celle des professionnels ?",
       "duration_seconds": null
     },
@@ -37,7 +37,7 @@
       "render_brut": false
     },
     "debut": "2026-06-15T03:18:30Z",
-    "derniere_mise_a_jour": "2026-06-15T03:25:33Z"
+    "derniere_mise_a_jour": "2026-06-15T03:37:37Z"
   },
   "historique": [
     {
