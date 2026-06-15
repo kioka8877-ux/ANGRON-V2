@@ -1,8 +1,11 @@
-# ANGRON — Dependances Python
+# ANGRON — Dependances Python — V2
 
-# Manim
-manim>=0.18.0
-manim-voiceover>=0.3.0
+# manimgl (3B1B engine — remplace ManimCommunity)
+manimgl
+
+# HOOK_STUDIO
+yt-dlp
+streamlit
 
 # Whisper (transcription + timestamps) — faster-whisper : pas de torch, CTranslate2
 faster-whisper>=1.0.0

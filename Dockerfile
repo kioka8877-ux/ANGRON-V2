@@ -1,6 +1,6 @@
-# ANGRON — Environnement de rendu complet
-# Image : ghcr.io/kioka8877-ux/angron:latest
-# Contient : Manim + LaTeX + FFmpeg + Whisper + Cairo + CMU Serif
+# ANGRON — Environnement de rendu complet — V2
+# Image : ghcr.io/kioka8877-ux/angron-v2:latest
+# Contient : manimgl + LaTeX + FFmpeg + Whisper + Cairo + CMU Serif + yt-dlp + streamlit
 
 FROM python:3.11-slim-bookworm
 
