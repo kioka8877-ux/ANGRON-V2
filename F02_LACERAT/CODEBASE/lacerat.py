@@ -1,19 +1,36 @@
 """
-lacerat.py — F02_LACERAT : génération du storyboard Manim via Claude.
+lacerat.py — F02_LACERAT : génération des scènes manimgl via Claude.
 
-Charge META_LACERAT depuis METAPROMPTS/META_LACERAT.md.
-Prend le script SANGUIS + les timestamps Whisper + les assets disponibles.
-Appelle Claude avec ce metaprompt comme system prompt.
-Produit prompt_XXX.md (storyboard Manim complet avec timings).
+V2 : génère scenes_XXX.py (multi-scènes manimgl) au lieu d'un storyboard markdown.
+Architecture V2 : 4-5 classes InteractiveScene séparées nommées 01_xxx...05_xxx.
 
 Usage :
+    # Mode math_script (voix off + timestamps Whisper) :
     python3 F02_LACERAT/CODEBASE/lacerat.py \
-        --script  F01_SANGUIS/OUT/script_XXX.md \
+        --script     F01_SANGUIS/OUT/script_XXX.md \
         --timestamps F02_LACERAT/OUT/whisper_timestamps_XXX.json \
-        --id      XXX \
-        --format  short|longform \
-        --output  F02_LACERAT/OUT/prompt_XXX.md \
-        [--assets F02_LACERAT/IN/assets/]
+        --mode       math_script \
+        --id         XXX \
+        --format     short \
+        --output     F02_LACERAT/OUT/scenes_XXX.py
+
+    # Mode math_no_script (pas de voix, [ANIM:] seuls) :
+    python3 F02_LACERAT/CODEBASE/lacerat.py \
+        --script F01_SANGUIS/OUT/script_XXX.md \
+        --mode   math_no_script \
+        --id     XXX \
+        --format short \
+        --output F02_LACERAT/OUT/scenes_XXX.py
+
+    # Mode hook (clip réel en tête, arc 3B1B après) :
+    python3 F02_LACERAT/CODEBASE/lacerat.py \
+        --script    F01_SANGUIS/OUT/script_XXX.md \
+        --timestamps F02_LACERAT/OUT/whisper_timestamps_XXX.json \
+        --mode      hook \
+        --hook-path F02_LACERAT/IN/HOOK/hook_ready.mp4 \
+        --id        XXX \
+        --format    short \
+        --output    F02_LACERAT/OUT/scenes_XXX.py
 
 Requiert :
     ANTHROPIC_API_KEY dans l'environnement
@@ -26,16 +43,28 @@ import os
 import sys
 from pathlib import Path
 
-# Chemin du metaprompt — relatif à la racine du dépôt ANGRON
 _META_PATH = Path("METAPROMPTS/META_LACERAT.md")
 
-# Fallback minimal si le fichier est absent
 _META_FALLBACK = """
 Tu es LACERAT, le traducteur tactique de la flotte ANGRON.
-Tu reçois un script humain balisé et tu produis un prompt Manim storyboardé au millimètre.
-Tu ne crées pas — tu traduis. La créativité appartient à SANGUIS.
-Génère un storyboard bloc par bloc avec timings Whisper, directives Manim et charte ANGRON_STYLE.
+Tu génères du code manimgl V2. Règles strictes :
+- Import : from manimlib import *
+- Classe de base : InteractiveScene (jamais Scene)
+- 4 à 5 classes séparées, une par segment de l'arc 3B1B
+- Nommage : classes HookQuestion, EquationReveal, ProblemBeauty, MathAnswer, BodyApplication
+- ShowCreation() (pas Create()), Tex() (pas MathTex()), FRAME_HEIGHT (pas config.pixel_height)
+- Chaque classe est autonome et renderable séparément
 """.strip()
+
+MODES = ["math_script", "math_no_script", "hook"]
+
+_SCENE_NAMES_SHORT = [
+    "01_HookQuestion",
+    "02_EquationReveal",
+    "03_ProblemBeauty",
+    "04_MathAnswer",
+    "05_BodyApplication",
+]
 
 
 def _load_meta() -> str:
@@ -61,12 +90,14 @@ def list_assets(assets_dir: Path) -> list[str]:
     ]
 
 
-def generate_prompt(
+def generate_scenes(
     script_text: str,
-    timestamps: dict,
-    assets: list[str],
+    mode: str,
     script_id: str,
     fmt: str,
+    timestamps: dict | None,
+    assets: list[str],
+    hook_path: str | None,
 ) -> str:
     try:
         import anthropic
@@ -85,16 +116,48 @@ def generate_prompt(
     fmt_label  = "SHORT 9:16 (1080x1920)" if fmt == "short" else "LONGFORM 16:9 (1920x1080)"
     assets_str = "\n".join(f"  - {a}" for a in assets) if assets else "  (aucun)"
 
+    scene_names_str = "\n".join(f"  {n}" for n in _SCENE_NAMES_SHORT)
+
     user_message = (
         f"ID PROJET : {script_id}\n"
-        f"FORMAT    : {fmt_label}\n\n"
+        f"FORMAT    : {fmt_label}\n"
+        f"MODE      : {mode}\n\n"
         f"--- SCRIPT SANGUIS ---\n{script_text}\n\n"
-        f"--- TIMESTAMPS WHISPER ---\n{json.dumps(timestamps, indent=2, ensure_ascii=False)}\n\n"
-        f"--- ASSETS DISPONIBLES ---\n{assets_str}\n\n"
-        "Génère le storyboard Manim complet selon le format ANGRON."
     )
 
-    print(f"[LACERAT] Génération storyboard (claude-opus-4-8)...", file=sys.stderr)
+    if timestamps:
+        user_message += (
+            f"--- TIMESTAMPS WHISPER ---\n"
+            f"{json.dumps(timestamps, indent=2, ensure_ascii=False)}\n\n"
+        )
+    else:
+        user_message += "--- TIMESTAMPS WHISPER --- : non fournis (mode math_no_script)\n\n"
+
+    if mode == "hook" and hook_path:
+        user_message += (
+            f"--- MODE HOOK ---\n"
+            f"Le clip hook_ready.mp4 est à : {hook_path}\n"
+            f"Les scènes manimgl commencent APRÈS ce clip (F04_NAILS fait la concat).\n"
+            f"La scène 01_HookQuestion peut faire référence visuellement au clip mais n'en dépend pas.\n\n"
+        )
+
+    user_message += (
+        f"--- ASSETS DISPONIBLES ---\n{assets_str}\n\n"
+        f"--- NOMMAGE DES SCÈNES (obligatoire) ---\n{scene_names_str}\n\n"
+        "Génère un fichier Python manimgl complet avec 5 classes InteractiveScene.\n"
+        "Chaque classe correspond à un segment de l'arc 3B1B (7s/8s/15s/20s/10s).\n"
+        "Import obligatoire : from manimlib import *\n"
+        "NE PAS importer from manim import *\n"
+    )
+
+    if mode == "math_no_script":
+        user_message += (
+            "\nMode math_no_script : pas de voix off.\n"
+            "Les animations doivent être auto-suffisantes et auto-explicatives.\n"
+            "Texte à l'écran (Tex/Text) peut remplacer la narration.\n"
+        )
+
+    print(f"[LACERAT] Génération scenes.py (claude-opus-4-8)...", file=sys.stderr)
 
     message = client.messages.create(
         model="claude-opus-4-8",
@@ -107,44 +170,68 @@ def generate_prompt(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="LACERAT — storyboard Manim F02")
-    parser.add_argument("--script",     required=True, help="script_XXX.md (F01 output)")
-    parser.add_argument("--timestamps", required=True, help="whisper_timestamps_XXX.json")
-    parser.add_argument("--id",         required=True, help="ID projet (ex: 001)")
-    parser.add_argument("--format",     required=True, choices=["short", "longform"])
-    parser.add_argument("--output",     required=True, help="F02_LACERAT/OUT/prompt_XXX.md")
-    parser.add_argument("--assets",     default="F02_LACERAT/IN/assets",
+    parser = argparse.ArgumentParser(description="LACERAT — générateur scenes manimgl F02 V2")
+    parser.add_argument("--script",      required=True, help="script_XXX.md (F01 output)")
+    parser.add_argument("--mode",        required=True, choices=MODES,
+                        help="math_script | math_no_script | hook")
+    parser.add_argument("--id",          required=True, help="ID projet (ex: 002)")
+    parser.add_argument("--format",      required=True, choices=["short", "longform"])
+    parser.add_argument("--output",      required=True, help="F02_LACERAT/OUT/scenes_XXX.py")
+    parser.add_argument("--timestamps",  default=None,
+                        help="whisper_timestamps_XXX.json (optionnel en mode math_no_script)")
+    parser.add_argument("--assets",      default="F02_LACERAT/IN/assets",
                         help="Dossier assets (défaut: F02_LACERAT/IN/assets)")
+    parser.add_argument("--hook-path",   default=None,
+                        help="(mode hook) chemin vers hook_ready.mp4")
     args = parser.parse_args()
 
     script_path = Path(args.script)
-    ts_path     = Path(args.timestamps)
     output_path = Path(args.output)
     assets_dir  = Path(args.assets)
 
     if not script_path.exists():
         print(f"[LACERAT] ERREUR : script introuvable : {script_path}", file=sys.stderr)
         sys.exit(1)
-    if not ts_path.exists():
-        print(f"[LACERAT] ERREUR : timestamps introuvables : {ts_path}", file=sys.stderr)
-        sys.exit(1)
+
+    timestamps = None
+    if args.timestamps:
+        ts_path = Path(args.timestamps)
+        if not ts_path.exists():
+            print(f"[LACERAT] ERREUR : timestamps introuvables : {ts_path}", file=sys.stderr)
+            sys.exit(1)
+        timestamps = load_timestamps(ts_path)
+
+    if args.mode == "math_script" and not timestamps:
+        print("[LACERAT] AVERTISSEMENT : mode math_script sans timestamps — le sync sera approximatif.", file=sys.stderr)
+
+    hook_path = getattr(args, "hook_path", None)
+    if args.mode == "hook" and not hook_path:
+        print("[LACERAT] AVERTISSEMENT : mode hook sans --hook-path — hook ignoré.", file=sys.stderr)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    assets = list_assets(assets_dir)
 
-    script_text = script_path.read_text(encoding="utf-8")
-    timestamps  = load_timestamps(ts_path)
-    assets      = list_assets(assets_dir)
+    ts_info = f"{timestamps.get('nb_blocs', '?')} blocs, {timestamps.get('duree_totale', '?')}s" if timestamps else "non fournis"
 
     print(f"[LACERAT] Script     : {script_path}")
-    print(f"[LACERAT] Timestamps : {ts_path} ({timestamps.get('nb_blocs', '?')} blocs, {timestamps.get('duree_totale', '?')}s)")
+    print(f"[LACERAT] Mode       : {args.mode}")
+    print(f"[LACERAT] Timestamps : {ts_info}")
     print(f"[LACERAT] Assets     : {len(assets)} fichier(s)")
     print(f"[LACERAT] Format     : {args.format}")
 
-    prompt_md = generate_prompt(script_text, timestamps, assets, args.id, args.format)
+    scenes_py = generate_scenes(
+        script_text=script_path.read_text(encoding="utf-8"),
+        mode=args.mode,
+        script_id=args.id,
+        fmt=args.format,
+        timestamps=timestamps,
+        assets=assets,
+        hook_path=hook_path,
+    )
 
-    output_path.write_text(prompt_md, encoding="utf-8")
-    print(f"[LACERAT] Storyboard → {output_path}")
-    print(f"[LACERAT] DONE — attendre validation opérateur (GATE)")
+    output_path.write_text(scenes_py, encoding="utf-8")
+    print(f"[LACERAT] scenes.py  → {output_path}")
+    print(f"[LACERAT] DONE — copier vers F03_CRUOR/CODEBASE/ puis valider (STATE_4_GATE)")
 
 
 if __name__ == "__main__":
