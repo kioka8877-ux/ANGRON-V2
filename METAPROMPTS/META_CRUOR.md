@@ -351,14 +351,22 @@ if __name__ == '__main__':
 ## ÉTAPE 3 — DÉCLENCHEMENT DU RENDER AUTONOME
 
 ```bash
+# V2 — render toutes les scènes + assemblage staged (recommandé)
 bash F03_CRUOR/CODEBASE/render.sh \
-  --scene scene_XXX.py \
-  --output F03_CRUOR/OUT/cruor_render_XXX.mp4 \
-  --format short
-# — Claude se tait ici —
-```
+  --scenes  F03_CRUOR/CODEBASE/scenes_XXX.py \
+  --all \
+  --out-dir F03_CRUOR/OUT/ \
+  --staged  F03_CRUOR/OUT/staged_XXX.mp4 \
+  --format  short
+# — Claude se tait ici — signal de fin : F03_CRUOR/OUT/DONE.txt
 
-**V2 : render.sh doit itérer sur chaque scène + appeler stage.py.**
+# V2 — render une scène seule (debug)
+bash F03_CRUOR/CODEBASE/render.sh \
+  --scenes      F03_CRUOR/CODEBASE/scenes_XXX.py \
+  --scene-class HookQuestion \
+  --output      F03_CRUOR/OUT/01_HookQuestion.mp4 \
+  --format      short
+```
 
 ---
 
@@ -440,3 +448,4 @@ def wave_surface(axes3d, t_tracker):
 
 *CRUOR — Flotte ANGRON v1.0 / v2.0*
 *"Le rendu ne ment pas. Le code, si."*
+

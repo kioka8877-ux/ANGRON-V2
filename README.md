@@ -177,7 +177,7 @@ ANGRON-V2/
 │   │   └── assets/
 │   └── OUT/
 ├── F03_CRUOR/                   ← Moteur manimgl
-│   ├── CODEBASE/render.sh + stage.py + stage_scenes.py
+│   ├── CODEBASE/render.sh + stage.py
 │   ├── IN/
 │   └── OUT/
 ├── F04_NAILS/                   ← Finisseur FFmpeg (+ mode hook)
@@ -282,11 +282,11 @@ RUN apt-get update && apt-get install -y \
 
 RUN pip install \
     manimgl \
-    manim-voiceover \
-    openai-whisper \
+    faster-whisper \
     yt-dlp \
     streamlit \
-    flask
+    pydub soundfile \
+    Pillow numpy scipy
 
 RUN fc-cache -f -v
 ```
@@ -328,4 +328,20 @@ streamlit run HOOK_STUDIO/studio.py
 
 ---
 
+## ÉTAT DU CODEBASE V2 — 2026-06-15
+
+| Composant | Fichier | Statut |
+|-----------|---------|--------|
+| Dockerfile | `Dockerfile` + `requirements.txt` | DONE |
+| F01_SANGUIS | `sanguis.py` | DONE |
+| F02_LACERAT | `lacerat.py` | DONE |
+| F03_CRUOR | `render.sh` + `stage.py` | DONE |
+| F04_NAILS | `finish.sh` | DONE |
+| HOOK_STUDIO | `studio.py` + `downloader.py` + `cutter.py` | DONE |
+| Orchestrateur | `angron.py` | DONE |
+| F05_NUCERIA | `nuceria.py` | INCHANGÉE (V1 production-ready) |
+
+---
+
 *ANGRON V2 ne réfléchit pas. Il produit. Mieux.*
+
