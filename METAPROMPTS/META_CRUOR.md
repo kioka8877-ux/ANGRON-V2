@@ -34,7 +34,7 @@ hormis les assets référencés dans `F02_LACERAT/IN/assets/`.
 
 ---
 
-## ÉTAPE 1 — GÉNÉRATION DU CODE MANIM
+## ÉTAPE 1 — GÉNÉRATION DU CODE MANIM (V1)
 
 ### Structure obligatoire du fichier `scene_XXX.py`
 
@@ -77,30 +77,109 @@ config.background_color = BG
 config.tex_template     = TexFontTemplates.french_script  # optionnel
 
 # ============================================================
-# HELPERS — fonctions utilitaires réutilisables
+# HELPERS
 # ============================================================
 def angron_text(content, size=52, color=TEXT, **kwargs):
-    """Texte standard ANGRON avec police CMU Serif."""
-    return Tex(content, font_size=size, color=color,
-               tex_template=TexTemplate(
-                   documentclass=r"\documentclass[preview]{standalone}",
-                   preamble=r"\usepackage{fontspec}\setmainfont{CMU Serif}"
-               ), **kwargs)
+    return Tex(content, font_size=size, color=color, **kwargs)
 
 def angron_math(content, size=48, color=SECONDARY, **kwargs):
-    """Équation standard ANGRON."""
     return MathTex(content, font_size=size, color=color, **kwargs)
 
 def angron_axes(x_range=(-4,4,1), y_range=(-3,3,1), **kwargs):
-    """Axes ANGRON avec labels stylisés."""
     return Axes(
         x_range=x_range, y_range=y_range,
-        axis_config={
-            "color": TEXT_DIM,
-            "stroke_width": STROKE,
-            "include_tip": True,
-            "tip_shape": ArrowTriangleFilledTip
-        },
+        axis_config={"color": TEXT_DIM, "stroke_width": STROKE, "include_tip": True},
+        **kwargs
+    )
+
+def wait_sync(t):
+    return t if t > 0.05 else 0.05
+
+# ============================================================
+# SCÈNE PRINCIPALE
+# ============================================================
+class AngronScene(Scene):
+
+    def construct(self):
+        pass
+```
+
+---
+
+## ═══════════════════════════════════════════════════════════
+## CRUOR V2 — MANIMGL + INTERACTIVESCENE + MULTI-SCÈNES (2026-06-15)
+## ═══════════════════════════════════════════════════════════
+
+### IMPORT V2 — OBLIGATOIRE
+
+```python
+# V1 (ManimCommunity) — INTERDIT en V2
+from manim import *
+
+# V2 (manimgl — fork 3B1B) — OBLIGATOIRE
+from manimlib import *
+```
+
+### DIFFÉRENCES API COMPLÈTES V1 → V2
+
+| ManimCommunity (V1) | manimgl (V2) | Impact |
+|---------------------|-------------|--------|
+| `from manim import *` | `from manimlib import *` | Tout le reste dépend de ça |
+| `MathTex()` | `Tex()` | Tex() gère maths ET texte en manimgl |
+| `Scene` | `InteractiveScene` | Classe de base obligatoire |
+| `config.pixel_height` | `FRAME_HEIGHT` | Constante globale |
+| `self.play(Create(x))` | `self.play(ShowCreation(x))` | Renommé |
+| `config.frame_rate = 60` | Via `self.camera` ou argument CLI | Différent |
+| `MovingCameraScene` | `InteractiveScene` + `self.frame` | Unifié |
+| `ThreeDScene` | `ThreeDScene` (conservé) | OK |
+| `GrowFromCenter` | Vérifier disponibilité en manimgl | À tester |
+
+### STRUCTURE OBLIGATOIRE V2 — MULTI-SCÈNES
+
+```python
+#!/usr/bin/env python3
+"""
+ANGRON V2 — Scenes [XXX] | [Concept]
+Généré par META_CRUOR v2.0
+Format : [SHORT/LONGFORM] | [résolution] | 60fps
+manimgl (fork 3B1B) — from manimlib import *
+"""
+
+# ============================================================
+# IMPORT V2
+# ============================================================
+from manimlib import *
+import numpy as np
+
+# ============================================================
+# CHARTE ANGRON V2 — NE PAS MODIFIER
+# ============================================================
+BG        = "#171717"
+PRIMARY   = "#58C4DD"   # BLUE_D en manimgl
+SECONDARY = "#FFF1B6"   # YELLOW
+ACCENT    = "#A6CF98"   # GREEN
+TEXT      = "#ECEFF1"   # WHITE
+TEXT_DIM  = "#90A4AE"
+HIGHLIGHT = "#FF6D00"
+FONT      = "CMU Serif"
+STROKE    = 2
+
+# ============================================================
+# HELPERS V2 (manimgl)
+# ============================================================
+def angron_text(content, size=52, color=TEXT, **kwargs):
+    """Texte standard ANGRON — Tex() en manimgl."""
+    return Tex(content, font_size=size, color=color, **kwargs)
+
+def angron_math(content, size=48, color=SECONDARY, **kwargs):
+    """Équation ANGRON — Tex() unifie maths et texte en manimgl."""
+    return Tex(content, font_size=size, color=color, **kwargs)
+
+def angron_axes(x_range=(-4, 4, 1), y_range=(-3, 3, 1), **kwargs):
+    """Axes ANGRON V2."""
+    return Axes(
+        x_range=x_range, y_range=y_range,
+        axis_config={"color": TEXT_DIM, "stroke_width": STROKE},
         **kwargs
     )
 
@@ -109,53 +188,154 @@ def wait_sync(t):
     return t if t > 0.05 else 0.05
 
 # ============================================================
-# SCÈNE PRINCIPALE
+# SCÈNE 1 : HOOK ÉMOTIONNEL [0s → 7s]
 # ============================================================
-class AngronScene(Scene):  # ou MovingCameraScene, ThreeDScene selon le besoin
+class HookQuestion(InteractiveScene):
+    """Segment 1 : accroche émotionnelle — 7s"""
 
     def construct(self):
-        # [CODE GÉNÉRÉ PAR CRUOR ICI — bloc par bloc depuis le storyboard]
-        pass
+        # BLOC 1 | 0.0s → 3.5s | Hook visuel
+        titre = Tex(r"\textbf{Regarde Messi}",
+                    font_size=64, color=TEXT)
+        self.play(ShowCreation(titre), run_time=1.5)
+        self.wait(wait_sync(3.5 - 1.5))
+
+        # BLOC 2 | 3.5s → 7.0s | Contraste
+        sous = Tex(r"Ronaldo s'envole. Messi reste debout.",
+                   font_size=44, color=TEXT_DIM)
+        sous.next_to(titre, DOWN, buff=0.5)
+        self.play(FadeIn(sous, shift=DOWN * 0.3), run_time=0.8)
+        self.wait(wait_sync(7.0 - 3.5 - 0.8))
+
+# ============================================================
+# SCÈNE 2 : RÉVÉLATION ÉQUATION [7s → 22s]
+# ============================================================
+class EquationReveal(InteractiveScene):
+    """Segment 2 : beauté du problème — 15s"""
+
+    def construct(self):
+        # Pattern 3B1B : révélation avec t2c (text-to-color)
+        equation = Tex(
+            R"\Delta v = v_e \ln\frac{m_0}{m_f}",
+            t2c={
+                R"\Delta v": PRIMARY,
+                "v_e": SECONDARY,
+                "m_0": ACCENT,
+                "m_f": HIGHLIGHT
+            },
+            font_size=60
+        )
+        self.play(Write(equation), run_time=3.0)
+        self.wait(2)  # pause cognitive obligatoire
+
+        # Mouvement caméra 3B1B style
+        frame = self.frame
+        self.play(frame.animate.move_to(equation).set_height(4), run_time=1.5)
+        self.wait(wait_sync(15.0 - 3.0 - 2.0 - 1.5))
+
+# ============================================================
+# SCÈNE 3 : RAISONNEMENT [22s → 42s]
+# ============================================================
+class MathAnswer(InteractiveScene):
+    """Segment 3 : inévitabilité de la réponse — 20s"""
+
+    def construct(self):
+        # Animation en cascade (pattern 3B1B)
+        formules = VGroup(*[
+            Tex(f"Étape {i}", font_size=40, color=TEXT)
+            for i in range(1, 5)
+        ]).arrange(DOWN, buff=0.4)
+
+        self.play(
+            LaggedStart(*[FadeIn(f, shift=RIGHT * 0.3) for f in formules],
+                        lag_ratio=0.2),
+            run_time=4.0
+        )
+        self.wait(wait_sync(20.0 - 4.0))
+
+# ============================================================
+# SCÈNE 4 : APPLICATION INCARNÉE [42s → 52s]
+# ============================================================
+class BodyApplication(InteractiveScene):
+    """Segment 4 : retour monde réel — 10s"""
+
+    def construct(self):
+        conclusion = Tex(
+            r"La physique choisit \textbf{toujours} les petits.",
+            font_size=52, color=TEXT
+        )
+        self.play(Write(conclusion), run_time=2.0)
+        self.wait(wait_sync(10.0 - 2.0))
 ```
 
----
+### RENDER PAR SCÈNE V2
 
-### Règles de génération bloc par bloc
+```bash
+# V1 : render unique
+manimgl scene.py FullVideo --write_to_movie
 
-**Pour chaque BLOC du storyboard :**
+# V2 : render par scène (ordre obligatoire)
+DISPLAY=:99 Xvfb :99 -screen 0 1920x1080x24 &
 
-1. **Lire** : start, end, texte, directive Manim, notes CRUOR
-2. **Calculer** : `animation_time = end - start - 0.3` (marge sécurité)
-3. **Générer** le code avec `run_time=animation_time` précis
-4. **Synchroniser** : `self.wait(wait_sync(end - start - animation_time))`
-5. **Commenter** : `# BLOC N | [start]s → [end]s | [description courte]`
+manimgl scenes_XXX.py HookQuestion    --write_to_movie -o 01_HookQuestion.mp4
+manimgl scenes_XXX.py EquationReveal  --write_to_movie -o 02_EquationReveal.mp4
+manimgl scenes_XXX.py MathAnswer      --write_to_movie -o 03_MathAnswer.mp4
+manimgl scenes_XXX.py BodyApplication --write_to_movie -o 04_BodyApplication.mp4
 
-**Exemple de bloc généré :**
+# Assemblage
+python3 stage.py F03_CRUOR/OUT/ F03_CRUOR/OUT/staged_XXX.mp4
+```
+
+### stage.py — Assemblage des scènes
+
 ```python
-# BLOC 1 | 0.0s → 3.2s | ACCROCHE — Question Messi
-question = angron_text(
-    r"Pourquoi \textbf{Messi} ne tombe jamais ?",
-    size=52
-)
-question.move_to(UP * 3.5)  # quart supérieur écran 9:16
-self.play(AddTextLetterByLetter(question, time_per_char=0.07), run_time=1.8)
-self.wait(wait_sync(3.2 - 1.8))  # = 1.4s
+import os, sys, subprocess
 
-# BLOC 2 | 3.2s → 5.8s | Transition — Ronaldo
-sous_question = angron_text(
-    r"Et \textbf{Ronaldo} perd l'équilibre, lui.",
-    size=44, color=TEXT_DIM
-)
-sous_question.next_to(question, DOWN, buff=0.6)
-self.play(FadeIn(sous_question, shift=DOWN*0.3), run_time=0.8)
-self.wait(wait_sync(5.8 - 3.2 - 0.8))  # = 1.2s
+def stage_scenes(renders_dir: str, output_path: str):
+    """
+    Assemble tous les MP4 du dossier dans l'ordre alphabétique.
+    F02_LACERAT doit préfixer les noms : 01_Hook.mp4, 02_Equation.mp4...
+    """
+    renders = sorted([
+        os.path.join(renders_dir, f)
+        for f in os.listdir(renders_dir)
+        if f.endswith('.mp4') and not f.startswith('staged')
+    ])
+    if not renders:
+        raise ValueError(f"Aucun render dans {renders_dir}")
+
+    list_path = os.path.join(renders_dir, 'concat_list.txt')
+    with open(list_path, 'w') as f:
+        for r in renders:
+            f.write(f"file '{r}'\n")
+
+    subprocess.run(
+        ['ffmpeg', '-y', '-f', 'concat', '-safe', '0',
+         '-i', list_path, '-c', 'copy', output_path],
+        check=True
+    )
+    print(f"Staged: {len(renders)} scènes → {output_path}")
+
+if __name__ == '__main__':
+    stage_scenes(sys.argv[1], sys.argv[2])
 ```
+
+### CHECKLIST DE VALIDATION V2 (avant render)
+
+- [ ] Import : `from manimlib import *` (pas `from manim import *`)
+- [ ] Toutes les classes héritent de `InteractiveScene` (pas `Scene`)
+- [ ] Aucun `MathTex()` — tout passe par `Tex()`
+- [ ] `ShowCreation()` utilisé (pas `Create()`)
+- [ ] Tous les `self.play()` ont un `run_time` explicite
+- [ ] Tous les objets référencés dans `self.play()` sont définis avant
+- [ ] Les `ImageMobject` pointent vers des chemins existants dans `F02_LACERAT/IN/assets/`
+- [ ] La durée totale calculée correspond à `whisper_timestamps.json["duree_totale"]` ± 2s
+- [ ] Les scènes sont nommées `01_NomScene`, `02_NomScene`... pour stage.py
+- [ ] Si mode hook : scène 01 répond à la hook_question (pas de clip hook dans le code)
 
 ---
 
-## ÉTAPE 2 — VALIDATION DU CODE AVANT RENDER
-
-Avant de déclencher `render.sh`, vérifie mentalement :
+## ÉTAPE 2 — VALIDATION DU CODE AVANT RENDER (V1)
 
 **Checklist obligatoire :**
 - [ ] Tous les `self.play()` ont un `run_time` explicite
@@ -166,13 +346,9 @@ Avant de déclencher `render.sh`, vérifie mentalement :
 - [ ] La durée totale calculée correspond à `whisper_timestamps.json["duree_totale"]` ± 2s
 - [ ] La scène utilise `ThreeDScene` si au moins un objet 3D est présent
 
-**Si une vérification échoue :** corrige avant de lancer le render.
-
 ---
 
 ## ÉTAPE 3 — DÉCLENCHEMENT DU RENDER AUTONOME
-
-Une fois le code validé, déclenche `render.sh` :
 
 ```bash
 bash F03_CRUOR/CODEBASE/render.sh \
@@ -180,17 +356,9 @@ bash F03_CRUOR/CODEBASE/render.sh \
   --output F03_CRUOR/OUT/cruor_render_XXX.mp4 \
   --format short
 # — Claude se tait ici —
-# — Render tourne dans le container Docker —
-# — Claude attend DONE.txt —
 ```
 
-Le script `render.sh` :
-1. Lance `docker run ghcr.io/kioka8877-ux/angron:latest`
-2. Exécute `manim render scene_XXX.py AngronScene -o cruor_render_XXX.mp4`
-3. Copie le MP4 dans `F03_CRUOR/OUT/`
-4. Écrit `F03_CRUOR/OUT/DONE.txt` avec le statut
-
-**Claude reprend uniquement quand DONE.txt existe.**
+**V2 : render.sh doit itérer sur chaque scène + appeler stage.py.**
 
 ---
 
@@ -199,22 +367,21 @@ Le script `render.sh` :
 ```
 DONE.txt contient :
 STATUS=OK
-OUTPUT=F03_CRUOR/OUT/cruor_render_XXX.mp4
+OUTPUT=F03_CRUOR/OUT/staged_XXX.mp4
 DURATION=58.4s
-FRAMES=3504
+SCENES=4
 RENDER_TIME=127s
 ```
 
-Si `STATUS=ERROR` : Claude lit `F03_CRUOR/OUT/error.log`, diagnostique, corrige `scene_XXX.py`, relance.
+Si `STATUS=ERROR` : lire `error.log`, diagnostiquer, corriger `scenes_XXX.py`, relancer la scène en erreur uniquement.
 
 ---
 
-## CATALOGUE DE PATTERNS MANIM ANGRON
+## CATALOGUE DE PATTERNS MANIM ANGRON V1 (conservé)
 
-### Humanoïde simplifié (cercle + lignes)
+### Humanoïde simplifié
 ```python
 def create_humanoid(height=2.0, cg_ratio=0.55, color=PRIMARY):
-    """Crée un humanoïde stick figure avec centre de gravité."""
     head  = Circle(radius=height*0.12, color=color, stroke_width=STROKE)
     body  = Line(ORIGIN, DOWN*height*0.5, color=color, stroke_width=STROKE)
     legs  = VGroup(
@@ -233,45 +400,43 @@ def create_humanoid(height=2.0, cg_ratio=0.55, color=PRIMARY):
     return figure, cg_point
 ```
 
-### Courbe animée temps réel
+### Surface 3D ondulante (V2 — manimgl)
 ```python
-def animated_curve(axes, func, color=PRIMARY, duration=2.0):
-    """Courbe qui se trace progressivement."""
-    curve = axes.plot(func, color=color, stroke_width=STROKE)
-    return Create(curve, run_time=duration)
-```
-
-### Surface 3D ondulante
-```python
-# Dans ThreeDScene
+# Dans ThreeDScene (conservé en manimgl)
 def wave_surface(axes3d, t_tracker):
     return Surface(
         lambda u, v: axes3d.c2p(u, v,
             np.sin(u**2 + v**2 - t_tracker.get_value()) / 2),
         u_range=[-2, 2], v_range=[-2, 2],
         resolution=(30, 30),
-        fill_color=PRIMARY, fill_opacity=0.85,
-        stroke_color=PRIMARY, stroke_width=0.5
+        color=PRIMARY, opacity=0.85
     )
 ```
 
 ---
 
-## RÈGLES DE QUALITÉ CRUOR
+## RÈGLES DE QUALITÉ CRUOR — V2
 
 **INTERDIT :**
-- `time.sleep()` dans le code Manim (utiliser `self.wait()`)
-- Animations avec `run_time < 0.2` (artefacts visuels)
-- Hardcoder des couleurs hex directement (toujours utiliser les constantes ANGRON)
-- `print()` dans la scène (pollue les logs du render)
-- Scènes de plus de 200 lignes sans commentaires de structure
+- `time.sleep()` dans le code Manim
+- Animations avec `run_time < 0.2`
+- Hardcoder des couleurs hex directement
+- `print()` dans la scène
+- **V2 : `from manim import *`**
+- **V2 : `MathTex()`**
+- **V2 : `Scene` comme classe de base**
+- **V2 : `Create()` → utiliser `ShowCreation()`**
 
 **OBLIGATOIRE :**
-- `wait_sync()` sur chaque pause pour garantir la synchronisation Whisper
+- `wait_sync()` sur chaque pause
 - Commentaire `# BLOC N | Xs → Xs | description` avant chaque bloc
-- Test de la durée totale avant le render : `assert abs(total - whisper_total) < 2.0`
+- Test durée totale avant render
+- **V2 : `from manimlib import *`**
+- **V2 : `InteractiveScene` pour toutes les classes**
+- **V2 : Nommage `NN_NomScene` pour stage.py**
+- **V2 : `stage.py` déclenché après tous les renders**
 
 ---
 
-*CRUOR — Flotte ANGRON v1.0*
+*CRUOR — Flotte ANGRON v1.0 / v2.0*
 *"Le rendu ne ment pas. Le code, si."*
