@@ -1,4 +1,4 @@
-# META_ANGRON — Orchestrateur Maître de la Flotte
+# META_ANGRON — Orchestrateur Maître de la Flotte ANGRON
 ## Skill Claude Code | Machine d'État Séquentielle
 
 ---
@@ -31,14 +31,17 @@ Ce skill s'active quand l'opérateur dit :
 Au démarrage sur tout nouveau compte ou session :
 
 ```bash
+# V1
 git clone https://github.com/kioka8877-ux/ANGRON .
+# V2
+git clone https://github.com/kioka8877-ux/ANGRON-V2 .
 # ou
 git pull origin main
 ```
 
 Lire immédiatement `.angron/ledger.json` :
 ```json
-{ "projet_actif": { "etape": "...", "id": "...", ... } }
+{ "projet_actif": { "etape": "...", "mode": "...", "id": "...", ... } }
 ```
 
 Si `etape != null` → reprendre à l'étape indiquée, PAS recommencer.
@@ -46,7 +49,7 @@ Si `etape == null` ou `ledger vide` → démarrer en STATE 1.
 
 ---
 
-## MACHINE D'ÉTAT — 9 STATES
+## MACHINE D'ÉTAT — 9 STATES (V1)
 
 ```
 STATE 0  [COLD_START]   → Hydratation ledger → STATE 1 ou STATE en cours
@@ -63,7 +66,232 @@ STATE 9  [DONE]         → Commit ledger + bilan → FIN
 
 ---
 
-## DÉTAIL DE CHAQUE STATE
+## ═══════════════════════════════════════════════════════════
+## ANGRON V2 — EXTENSIONS ORCHESTRATEUR (2026-06-15)
+## ═══════════════════════════════════════════════════════════
+
+### LES 3 MODES DE PRODUCTION V2
+
+Au STATE 1, l'orchestrateur demande le MODE en plus du format :
+
+```
+MODE 1 : math_script     → pipeline classique avec voix clonée
+MODE 2 : math_no_script  → pur visuel, musique seule, pas de voix
+MODE 3 : hook            → clip réel en accroche + explication mathématique
+```
+
+**Si mode hook :** déclencher HOOK_STUDIO avant STATE 2.
+
+---
+
+### MACHINE D'ÉTAT V2 — AVEC LES 3 MODES
+
+```
+STATE 0  [COLD_START]      → Hydratation ledger → reprendre à l'étape + mode en cours
+STATE 1  [CONCEPT]         → Réception concept + format + MODE → STATE 1b ou STATE 2
+STATE 1b [HOOK_STUDIO]     → (mode hook uniquement) Opérateur prépare hook_ready.mp4 → STATE 2
+STATE 2  [SANGUIS]         → Génération script (arc 3B1B) → GATE → STATE 3
+STATE 3  [LACERAT_INIT]    → Assets + Whisper (si math_script) → STATE 4
+STATE 4  [LACERAT_OUT]     → Génération scenes.py multi-scènes → GATE → STATE 5
+STATE 5  [CRUOR_GEN]       → Génération code manimgl multi-scènes → STATE 6
+STATE 6  [CRUOR_RENDER]    → Render par scène + stage.py (Claude inactif) → DONE.txt → GATE → STATE 7
+STATE 7  [NAILS]           → FFmpeg (+ concat hook si mode hook) → STATE 8
+STATE 8  [NUCERIA]         → Camouflage autonome → URL publique → STATE 9
+STATE 9  [DONE]            → Commit ledger V2 + bilan → FIN
+```
+
+---
+
+### STATE 1 V2 — RÉCEPTION DU CONCEPT (MISE À JOUR)
+
+```
+Input requis :
+  CONCEPT  : [description libre]
+  FORMAT   : short OU longform (demander si non précisé)
+  MODE     : math_script / math_no_script / hook (demander si non précisé)
+  ANGLE    : physique / math / bio / histoire (optionnel)
+
+Actions :
+  1. Générer un ID unique : angron_[YYYYMMDD]_[NNN]
+  2. Mettre à jour ledger.json V2 :
+     {
+       "projet_actif": {
+         "id": "angron_20260615_001",
+         "mode": "hook",
+         "format": "9:16",
+         "concept": "...",
+         "etape": "STATE_1b",
+         ...
+       }
+     }
+  3. Commiter ledger.json sur GitHub
+  → Si mode hook : STATE 1b
+  → Sinon : STATE 2
+```
+
+---
+
+### STATE 1b V2 — HOOK_STUDIO (MODE HOOK UNIQUEMENT)
+
+```
+Actions :
+  1. Informer l'opérateur :
+     "Mode HOOK activé. Lance HOOK_STUDIO et prépare ton clip :
+      streamlit run HOOK_STUDIO/studio.py"
+
+  2. L'opérateur :
+     - Colle l'URL (YouTube / TikTok / Instagram / Twitter)
+     - Télécharge via yt-dlp
+     - Définit IN/OUT (curseurs secondes)
+     - Choisit speed (0.25x → 4x) + volume (0% → 200%)
+     - Sélectionne format 9:16 (blur-pad) ou 16:9
+     - Remplit le champ hook_question OBLIGATOIRE
+     - Clique CUT
+
+  3. HOOK_STUDIO génère automatiquement :
+     → HOOK_STUDIO/OUT/hook_ready.mp4
+     → Copie dans F02_LACERAT/IN/HOOK/hook_ready.mp4
+     → Écrit hook_question dans ledger.json
+
+  4. Vérifier que hook_ready.mp4 existe dans F02_LACERAT/IN/HOOK/
+  → STATE 2
+```
+
+---
+
+### STATE 2 V2 — SANGUIS (ARC 3B1B)
+
+```
+Appliquer META_SANGUIS_V2 complet (arc 5 segments + marqueurs [ANIM:]).
+
+Si mode hook :
+  → Passer hook_question à SANGUIS comme contexte
+  → L'accroche décrit ce que montre le clip, pas une question inventée
+
+Actions :
+  1. Générer script_[ID].md avec arc 3B1B :
+     [7s] HOOK → [8s] QUESTION → [15s] BEAUTÉ → [20s] INÉVITABILITÉ → [10s] APPLICATION
+  2. Inclure les marqueurs [ANIM:] obligatoires sur chaque segment
+  3. Présenter à l'opérateur (5 lignes max)
+
+GATE : "Valides-tu ce script ? (oui / modif : [description])"
+```
+
+---
+
+### STATE 4 V2 — LACERAT MULTI-SCÈNES
+
+```
+Appliquer META_LACERAT_V2 (manimgl + multi-scènes).
+
+Actions :
+  1. Générer scenes_[ID].py avec N classes InteractiveScene séparées
+  2. Nommer les fichiers en sortie : 01_NomScene, 02_NomScene, etc.
+  3. Import : from manimlib import *  (pas from manim import *)
+
+GATE : "Valides-tu ce storyboard multi-scènes ?"
+```
+
+---
+
+### STATE 5 V2 — CRUOR GÉNÉRATION MANIMGL
+
+```
+Appliquer META_CRUOR_V2 (manimgl + InteractiveScene).
+
+Actions :
+  1. Générer scenes_[ID].py avec classes InteractiveScene
+  2. Utiliser API manimgl : Tex() / ShowCreation() / FRAME_HEIGHT
+  3. Vérifier checklist V2 (pas de MathTex, pas de Scene, pas de Create)
+```
+
+---
+
+### STATE 6 V2 — CRUOR RENDER PAR SCÈNE
+
+```
+Actions :
+  1. Render chaque scène séparément :
+     manimgl scenes_[ID].py NomScene --write_to_movie -o NN_NomScene.mp4
+
+  2. Assembler via stage.py :
+     python3 stage.py F03_CRUOR/OUT/ F03_CRUOR/OUT/staged_[ID].mp4
+
+  3. Claude se tait. Attendre DONE.txt.
+
+  4. Quand DONE.txt :
+     → Vérifier staged_[ID].mp4 généré
+     → Présenter à l'opérateur
+
+GATE : "Valides-tu la vidéo brute assemblée ?"
+```
+
+---
+
+### STATE 7 V2 — NAILS (MODE HOOK)
+
+```
+Si mode hook :
+  1. Fade audio fin du clip hook :
+     ffmpeg -i hook_ready.mp4 -af "afade=t=out:st=3:d=1" hook_faded.mp4
+
+  2. Concat hook + manim :
+     ffmpeg -i hook_faded.mp4 -i staged_[ID].mp4 \
+       -filter_complex "[0:v][0:a][1:v][1:a]concat=n=2:v=1:a=1[v][a]" \
+       -map "[v]" -map "[a]" concat.mp4
+
+  3. Merge musique :
+     ffmpeg -i concat.mp4 -i music.mp3 -c:v copy -c:a aac -shortest nails_out.mp4
+
+Si mode math_script :
+  → Comportement V1 inchangé
+
+Si mode math_no_script :
+  → Merge vidéo + musique uniquement (pas de voix)
+```
+
+---
+
+### LEDGER.JSON V2 — SCHEMA
+
+```json
+{
+  "version": "2.0",
+  "flotte": "ANGRON-V2",
+  "projet_actif": {
+    "id": "uuid",
+    "mode": "math_script | math_no_script | hook",
+    "format": "9:16 | 16:9",
+    "concept": "texte libre",
+    "etape": "STATE_X",
+    "hook": {
+      "source_url": "url originale",
+      "hook_ready_path": "HOOK_STUDIO/OUT/hook_ready.mp4",
+      "hook_question": "Mais comment CR7 peut-il courber la balle ?",
+      "duration_seconds": 8
+    },
+    "fichiers": {
+      "script": "F01_SANGUIS/OUT/script_XXX.md",
+      "audio": "F02_LACERAT/IN/voice_XXX.mp3",
+      "timestamps": "F02_LACERAT/OUT/whisper_timestamps_XXX.json",
+      "scenes_py": "F02_LACERAT/OUT/scenes_XXX.py",
+      "renders": ["01_Hook.mp4", "02_Equation.mp4"],
+      "staged": "F03_CRUOR/OUT/staged_XXX.mp4",
+      "nails_out": "F04_NAILS/OUT/nails_out_XXX.mp4",
+      "final": "outputs/youtube_XXX.mp4"
+    },
+    "validations": {
+      "script": false,
+      "scenes": false,
+      "render_brut": false
+    }
+  }
+}
+```
+
+---
+
+## DÉTAIL DE CHAQUE STATE (V1 — INCHANGÉ)
 
 ### STATE 1 — RÉCEPTION DU CONCEPT
 
@@ -223,6 +451,7 @@ Actions :
   4. Afficher bilan :
      - Concept : ...
      - Format : ...
+     - Mode : ...
      - Durée vidéo : ...
      - Fichier final : ...
      - URL : ...
@@ -237,7 +466,7 @@ Si l'opérateur revient après une interruption (nouveau compte, session expiré
 ```
 1. git pull
 2. Lire ledger.json
-3. Annoncer : "ANGRON [ID] en cours — étape : [STATE]. Reprendre ? (oui/non)"
+3. Annoncer : "ANGRON [ID] en cours — étape : [STATE] — mode : [MODE]. Reprendre ? (oui/non)"
 4. Si oui → reprendre exactement à la STATE indiquée
 5. Si non → archiver dans historique, démarrer STATE 1
 ```
@@ -253,23 +482,29 @@ Si l'opérateur revient après une interruption (nouveau compte, session expiré
 | Docker pull fail | Image non buildée | `docker build -t angron .` local |
 | Timing désynchronisé | wait_sync() négatif | Recalculer les timings LACERAT |
 | Asset introuvable | Chemin incorrect | Vérifier F02_LACERAT/IN/assets/ |
+| manimgl import error (V2) | `from manim import *` au lieu de `from manimlib import *` | Corriger l'import dans scenes_XXX.py |
+| InteractiveScene manquant (V2) | Utilisation de `Scene` V1 | Remplacer par `InteractiveScene` |
+| stage.py échec (V2) | Aucun MP4 dans renders_dir | Vérifier que chaque render a bien produit son fichier |
+| hook_ready.mp4 absent (V2) | HOOK_STUDIO pas lancé | Relancer studio.py, vérifier CUT exécuté |
 
 ---
 
-## TOKENS — BUDGET PAR STATE
+## TOKENS — BUDGET PAR STATE (V2)
 
 | STATE | Tokens | Raison |
 |-------|--------|--------|
-| STATE 2 (SANGUIS) | ~2000 | Génération script complet |
-| STATE 4 (LACERAT) | ~3000 | Storyboard détaillé |
-| STATE 5 (CRUOR GEN) | ~4000 | Code Manim complet |
+| STATE 1 (concept + mode) | ~100 | Choix mode + init ledger |
+| STATE 1b (hook studio) | 0 | Opérateur seul — Claude guide seulement |
+| STATE 2 (SANGUIS arc 3B1B) | ~2500 | Script + arc segmenté + marqueurs [ANIM:] |
+| STATE 4 (LACERAT multi-scènes) | ~3500 | N classes InteractiveScene storyboardées |
+| STATE 5 (CRUOR GEN manimgl) | ~4500 | Code manimgl multi-classes complet |
 | STATE 6 (render) | 0 | Process autonome |
 | STATE 7 (NAILS) | 0 | Process autonome |
 | STATE 8 (NUCERIA) | 0 | Process autonome |
 | STATE 9 (bilan) | ~200 | Résumé + commit |
-| **TOTAL** | **~9200** | Par vidéo produite |
+| **TOTAL V2** | **~10800** | Par vidéo produite |
 
 ---
 
-*META_ANGRON — Flotte ANGRON v1.0*
+*META_ANGRON — Flotte ANGRON v1.0 / v2.0*
 *"Un seul trigger. Cinq frigates. Un MP4."*
