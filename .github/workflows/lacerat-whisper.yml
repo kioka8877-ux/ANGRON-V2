@@ -56,20 +56,30 @@ jobs:
           sudo apt-get install -y --no-install-recommends ffmpeg
           pip install "faster-whisper>=1.0.0"
 
-      - name: Transcription Whisper
+      - name: Transcription Whisper (retry x3 si HuggingFace 429)
         run: |
           mkdir -p F02_LACERAT/OUT
           DEBUG_FLAG=""
           if [ "${{ inputs.debug }}" = "true" ]; then
             DEBUG_FLAG="--debug"
           fi
-          python3 F02_LACERAT/CODEBASE/whisper_sync.py \
-            --audio    "${{ inputs.audio }}" \
-            --script   "${{ inputs.script }}" \
-            --output   "${{ inputs.output }}" \
-            --model    "${{ inputs.model }}" \
-            --language "${{ inputs.language }}" \
-            $DEBUG_FLAG
+          for attempt in 1 2 3; do
+            echo "=== Tentative $attempt / 3 ==="
+            python3 F02_LACERAT/CODEBASE/whisper_sync.py \
+              --audio    "${{ inputs.audio }}" \
+              --script   "${{ inputs.script }}" \
+              --output   "${{ inputs.output }}" \
+              --model    "${{ inputs.model }}" \
+              --language "${{ inputs.language }}" \
+              $DEBUG_FLAG && break
+            if [ $attempt -lt 3 ]; then
+              echo "Echec tentative $attempt — attente 60s avant retry (HuggingFace rate limit)"
+              sleep 60
+            else
+              echo "3 tentatives echouees — abandon"
+              exit 1
+            fi
+          done
 
       - name: Mettre a jour ledger timestamps
         run: |
