@@ -4,21 +4,25 @@
   "primärque": "World Eaters — XIIème Légion",
   "charte": "ANGRON_STYLE_v1",
   "engine": "manimgl",
-  "modes_disponibles": ["math_script", "math_no_script", "hook"],
+  "modes_disponibles": [
+    "math_script",
+    "math_no_script",
+    "hook"
+  ],
   "projet_actif": {
-    "id": null,
-    "mode": null,
-    "concept": null,
-    "format": null,
-    "etape": "INIT",
+    "id": "002",
+    "mode": "hook",
+    "concept": "Pourquoi la trivela de Lamine est si précise par rapport aux autres joueurs",
+    "format": "short",
+    "etape": "STATE_2_GATE",
     "hook": {
       "source_url": null,
       "hook_ready_path": null,
-      "hook_question": null,
+      "hook_question": "Mais comment une technique de tir apprise dans la rue peut-elle être mathématiquement plus précise que celle des professionnels ?",
       "duration_seconds": null
     },
     "fichiers": {
-      "script": null,
+      "script": "F01_SANGUIS/OUT/script_002.md",
       "audio": null,
       "timestamps": null,
       "scenes_py": null,
@@ -32,8 +36,8 @@
       "scenes": false,
       "render_brut": false
     },
-    "debut": null,
-    "derniere_mise_a_jour": "2026-06-15T00:00:00Z"
+    "debut": "2026-06-15T03:18:30Z",
+    "derniere_mise_a_jour": "2026-06-15T03:25:33Z"
   },
   "historique": [
     {
