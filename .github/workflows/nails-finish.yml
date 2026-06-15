@@ -63,19 +63,20 @@ jobs:
 
       - name: Mettre a jour ledger STATE_8
         run: |
-          python3 -c "
+          python3 - <<'PYEOF'
           import json, datetime
-          with open('\.angron/ledger.json') as f:
+          ledger_path = ".angron/ledger.json"
+          with open(ledger_path) as f:
               l = json.load(f)
-          pid = '${{ inputs.project_id }}'
-          output = f'F04_NAILS/OUT/nails_out_{pid}.mp4'
-          l['projet_actif']['etape'] = 'STATE_8'
-          l['projet_actif']['fichiers']['nails_out'] = output
-          l['projet_actif']['derniere_mise_a_jour'] = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-          with open('\.angron/ledger.json', 'w') as f:
+          pid = "${{ inputs.project_id }}"
+          output = f"F04_NAILS/OUT/nails_out_{pid}.mp4"
+          l["projet_actif"]["etape"] = "STATE_8"
+          l["projet_actif"]["fichiers"]["nails_out"] = output
+          l["projet_actif"]["derniere_mise_a_jour"] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+          with open(ledger_path, "w") as f:
               json.dump(l, f, indent=2, ensure_ascii=False)
-          print('Ledger STATE_8 OK')
-          "
+          print("Ledger STATE_8 OK")
+          PYEOF
 
       - name: Commit nails_out et ledger
         run: |
@@ -84,4 +85,3 @@ jobs:
           git add F04_NAILS/OUT/nails_out_${{ inputs.project_id }}.mp4 .angron/ledger.json
           git diff --cached --quiet || git commit -m "ANGRON ${{ inputs.project_id }} - STATE_8 : fusion audio+video NAILS OK"
           git push
-
