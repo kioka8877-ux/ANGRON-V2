@@ -1,32 +1,46 @@
 {
   "version": "2.0",
-  "flotte": "ANGRON",
+  "flotte": "ANGRON-V2",
   "primärque": "World Eaters — XIIème Légion",
   "charte": "ANGRON_STYLE_v1",
+  "engine": "manimgl",
+  "modes_disponibles": ["math_script", "math_no_script", "hook"],
   "projet_actif": {
     "id": null,
+    "mode": null,
     "concept": null,
     "format": null,
     "etape": "INIT",
+    "hook": {
+      "source_url": null,
+      "hook_ready_path": null,
+      "hook_question": null,
+      "duration_seconds": null
+    },
     "fichiers": {
       "script": null,
       "audio": null,
-      "timestamps": "F02_LACERAT/OUT/whisper_timestamps_001.json",
-      "prompt_manim": null,
-      "assets": [],
-      "scene_py": null,
-      "render_brut": null,
+      "timestamps": null,
+      "scenes_py": null,
+      "renders": [],
+      "staged": null,
       "nails_out": null,
       "final": null
     },
+    "validations": {
+      "script": false,
+      "scenes": false,
+      "render_brut": false
+    },
     "debut": null,
-    "derniere_mise_a_jour": "2026-06-14T18:47:49Z"
+    "derniere_mise_a_jour": "2026-06-15T00:00:00Z"
   },
   "historique": [
     {
       "id": "001",
       "concept": "Boxe : le mythe des géants — un boxeur court a la même puissance de frappe et plus d agilité qu un boxeur grand",
       "format": "short",
+      "mode": "math_script",
       "date": "2026-06-14",
       "final": "F05_NUCERIA/OUT/youtube_short_001.mp4"
     }
@@ -37,9 +51,16 @@
     "cycles_complets": 1
   },
   "instructions_cold_start": [
-    "1. git clone https://github.com/kioka8877-ux/ANGRON",
-    "2. docker pull ghcr.io/kioka8877-ux/angron:latest",
-    "3. Claude lit ce fichier → reprend à l étape indiquée dans projet_actif.etape",
-    "4. Si etape=STATE_6 → python3 angron.py dispatch (lance render.sh Docker headless)"
-  ]
+    "1. git clone https://github.com/kioka8877-ux/ANGRON-V2",
+    "2. docker pull ghcr.io/kioka8877-ux/angron-v2:latest",
+    "3. Claude lit ce fichier → reprend à l etape + mode indiqués dans projet_actif",
+    "4. Si etape=STATE_6 → python3 angron.py dispatch (lance render.sh manimgl headless)",
+    "5. Si mode=hook → vérifier F02_LACERAT/IN/HOOK/hook_ready.mp4 avant STATE_2",
+    "6. Référence doc : TRACKING/ANGRON_CAMPAIGN_LOG.md + METAPROMPTS/"
+  ],
+  "refs_3b1b": {
+    "videos_repo": "https://github.com/3b1b/videos",
+    "manimgl_repo": "https://github.com/3b1b/manim",
+    "note": "Utiliser manimgl (pip install manimgl). NE PAS utiliser ManimCommunity."
+  }
 }
