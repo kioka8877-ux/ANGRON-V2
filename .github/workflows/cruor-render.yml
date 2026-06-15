@@ -2,6 +2,19 @@ name: ANGRON - F03_CRUOR Render
 
 on:
   workflow_dispatch:
+    inputs:
+      project_id:
+        description: "ID du projet (ex: 001, 002)"
+        required: true
+        default: "001"
+      scene_class:
+        description: "Classe Manim a rendre (ex: AngronScene)"
+        required: true
+        default: "AngronScene"
+      format:
+        description: "Format : short ou longform"
+        required: false
+        default: "short"
 
 jobs:
   render:
@@ -52,34 +65,45 @@ jobs:
         env:
           DISPLAY: :99
 
-      - name: Render scene_001
+      - name: Render scene
         env:
           DISPLAY: :99
         run: |
+          SCENE_FILE="F03_CRUOR/CODEBASE/scene_${{ inputs.project_id }}.py"
+          OUTPUT="F03_CRUOR/OUT/cruor_render_${{ inputs.project_id }}.mp4"
           mkdir -p F03_CRUOR/OUT
           manim render \
             --media_dir /tmp/media_cruor \
             --format mp4 \
             --fps 60 \
             --resolution 1080,1920 \
-            F03_CRUOR/CODEBASE/scene_001.py \
-            AngronScene
+            "$SCENE_FILE" \
+            ${{ inputs.scene_class }}
           MP4=$(find /tmp/media_cruor -name "*.mp4" | head -1)
           echo "MP4 trouve : $MP4"
-          cp "$MP4" F03_CRUOR/OUT/cruor_render_001.mp4
+          cp "$MP4" "$OUTPUT"
           ls -lh F03_CRUOR/OUT/
 
       - name: Mettre a jour ledger STATE_6_GATE
         run: |
-          python3 -c "import json,datetime; f=open('.angron/ledger.json'); l=json.load(f); f.close(); l['projet_actif']['etape']='STATE_6_GATE'; l['projet_actif']['fichiers']['render_brut']='F03_CRUOR/OUT/cruor_render_001.mp4'; l['projet_actif']['derniere_mise_a_jour']=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'); f=open('.angron/ledger.json','w'); json.dump(l,f,indent=2,ensure_ascii=False); f.close(); print('Ledger STATE_6_GATE OK')"
+          python3 -c "
+          import json, datetime
+          with open('.angron/ledger.json') as f:
+              l = json.load(f)
+          pid = '${{ inputs.project_id }}'
+          output = f'F03_CRUOR/OUT/cruor_render_{pid}.mp4'
+          l['projet_actif']['etape'] = 'STATE_6_GATE'
+          l['projet_actif']['fichiers']['render_brut'] = output
+          l['projet_actif']['derniere_mise_a_jour'] = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+          with open('.angron/ledger.json', 'w') as f:
+              json.dump(l, f, indent=2, ensure_ascii=False)
+          print('Ledger STATE_6_GATE OK')
+          "
 
       - name: Commit render et ledger
         run: |
           git config user.name "ANGRON-CRUOR"
           git config user.email "cruor@angron.bot"
-          git add F03_CRUOR/OUT/cruor_render_001.mp4 .angron/ledger.json
-          git diff --cached --quiet || git commit -m "ANGRON 001 - STATE_6_GATE : render brut CRUOR produit"
+          git add F03_CRUOR/OUT/cruor_render_${{ inputs.project_id }}.mp4 .angron/ledger.json
+          git diff --cached --quiet || git commit -m "ANGRON ${{ inputs.project_id }} - STATE_6_GATE : render brut CRUOR produit"
           git push
-
-
-
