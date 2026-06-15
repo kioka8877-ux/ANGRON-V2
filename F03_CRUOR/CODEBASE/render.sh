@@ -1,35 +1,50 @@
 #!/usr/bin/env bash
-# render.sh — F03_CRUOR : render Manim headless via Docker.
+# render.sh — F03_CRUOR V2 : render manimgl par scène + assemblage via stage.py.
 #
-# Usage :
+# Usage (render une scène) :
 #   bash F03_CRUOR/CODEBASE/render.sh \
-#     --scene F03_CRUOR/CODEBASE/scene_XXX.py \
-#     --output F03_CRUOR/OUT/cruor_render_XXX.mp4 \
-#     --format short|longform
+#     --scenes   F03_CRUOR/CODEBASE/scenes_XXX.py \
+#     --scene-class HookQuestion \
+#     --output   F03_CRUOR/OUT/01_HookQuestion.mp4 \
+#     --format   short|longform
+#
+# Usage (toutes les scènes + assemblage) :
+#   bash F03_CRUOR/CODEBASE/render.sh \
+#     --scenes  F03_CRUOR/CODEBASE/scenes_XXX.py \
+#     --all \
+#     --out-dir F03_CRUOR/OUT/ \
+#     --staged  F03_CRUOR/OUT/staged_XXX.mp4 \
+#     --format  short|longform
 #
 # Claude INACTIF pendant l'exécution. Signal de fin : DONE.txt (OK ou ERROR).
 
 set -euo pipefail
 
-DOCKER_IMAGE="ghcr.io/kioka8877-ux/angron:latest"
+DOCKER_IMAGE="ghcr.io/kioka8877-ux/angron-v2:latest"
 
-# --- Parse args ---
-SCENE=""
+SCENES=""
+SCENE_CLASS=""
 OUTPUT=""
+OUT_DIR=""
+STAGED=""
 FORMAT=""
+ALL_SCENES=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --scene)  SCENE="$2";  shift 2 ;;
-    --output) OUTPUT="$2"; shift 2 ;;
-    --format) FORMAT="$2"; shift 2 ;;
+    --scenes)      SCENES="$2";      shift 2 ;;
+    --scene-class) SCENE_CLASS="$2"; shift 2 ;;
+    --output)      OUTPUT="$2";      shift 2 ;;
+    --out-dir)     OUT_DIR="$2";     shift 2 ;;
+    --staged)      STAGED="$2";      shift 2 ;;
+    --format)      FORMAT="$2";      shift 2 ;;
+    --all)         ALL_SCENES=true;  shift 1 ;;
     *) echo "[CRUOR] Argument inconnu : $1" >&2; exit 1 ;;
   esac
 done
 
-# --- Validation ---
-if [[ -z "$SCENE" || -z "$OUTPUT" || -z "$FORMAT" ]]; then
-  echo "[CRUOR] ERREUR : --scene, --output et --format sont obligatoires." >&2
+if [[ -z "$SCENES" || -z "$FORMAT" ]]; then
+  echo "[CRUOR] ERREUR : --scenes et --format sont obligatoires." >&2
   exit 1
 fi
 
@@ -38,60 +53,148 @@ if [[ "$FORMAT" != "short" && "$FORMAT" != "longform" ]]; then
   exit 1
 fi
 
-if [[ ! -f "$SCENE" ]]; then
-  echo "[CRUOR] ERREUR : scene introuvable : $SCENE" >&2
+if [[ ! -f "$SCENES" ]]; then
+  echo "[CRUOR] ERREUR : fichier scenes introuvable : $SCENES" >&2
+  exit 1
+fi
+
+WORKSPACE="$(pwd)"
+
+# ─── Mode --all : render toutes les scènes + assemblage ──────────────────────
+if [[ "$ALL_SCENES" == "true" ]]; then
+  if [[ -z "$OUT_DIR" || -z "$STAGED" ]]; then
+    echo "[CRUOR] ERREUR : --all requiert --out-dir et --staged." >&2
+    exit 1
+  fi
+  mkdir -p "$OUT_DIR"
+  DONE_FILE="$OUT_DIR/DONE.txt"
+  ERROR_LOG="$OUT_DIR/error.log"
+
+  echo "[CRUOR] Render toutes scènes manimgl + assemblage..."
+  echo "  Scenes  : $SCENES"
+  echo "  Out dir : $OUT_DIR"
+  echo "  Staged  : $STAGED"
+  echo "  Image   : $DOCKER_IMAGE"
+
+  SCENE_CLASSES=$(grep -oP '^class \K\w+(?=\(InteractiveScene\))' "$SCENES" | sort || true)
+  if [[ -z "$SCENE_CLASSES" ]]; then
+    echo "[CRUOR] ERREUR : aucune classe InteractiveScene trouvée dans $SCENES" >&2
+    exit 1
+  fi
+
+  echo "[CRUOR] Scènes détectées :"
+  echo "$SCENE_CLASSES" | while read -r cls; do echo "  - $cls"; done
+
+  START_TS=$(date +%s)
+
+  docker run --rm \
+    --name "angron_cruor_all_$$" \
+    -v "${WORKSPACE}:/workspace" \
+    -e DISPLAY=:99 \
+    "$DOCKER_IMAGE" \
+    bash -c "
+      set -e
+      Xvfb :99 -screen 0 1920x1080x24 2>/dev/null &
+      sleep 2
+
+      OUT_BASE='/workspace/${OUT_DIR}'
+      MEDIA_DIR='/tmp/media_cruor'
+
+      while IFS= read -r SCENE_CLS; do
+        echo \"[CRUOR] Render \$SCENE_CLS...\"
+        rm -rf \"\$MEDIA_DIR\"
+        manimgl '/workspace/${SCENES}' \"\$SCENE_CLS\" \
+          --write_to_movie \
+          --media_dir \"\$MEDIA_DIR\" 2>&1
+
+        MP4=\$(find \"\$MEDIA_DIR\" -name '*.mp4' | sort | tail -1)
+        if [[ -z \"\$MP4\" ]]; then
+          echo \"ERROR: aucun MP4 pour \$SCENE_CLS\" >&2
+          exit 2
+        fi
+        cp \"\$MP4\" \"\${OUT_BASE}/\${SCENE_CLS}.mp4\"
+        echo \"[CRUOR] \$SCENE_CLS → \${OUT_BASE}/\${SCENE_CLS}.mp4\"
+      done < <(grep -oP '^class \K\w+(?=\(InteractiveScene\))' '/workspace/${SCENES}' | sort)
+
+      python3 /workspace/F03_CRUOR/CODEBASE/stage.py \
+        --in-dir  \"\$OUT_BASE\" \
+        --output  '/workspace/${STAGED}' 2>&1
+      echo '[CRUOR] Assemblage terminé.'
+    " 2>&1 | tee "$ERROR_LOG"
+
+  DOCKER_EXIT="${PIPESTATUS[0]}"
+  END_TS=$(date +%s)
+  RENDER_TIME=$(( END_TS - START_TS ))
+
+  if [[ "$DOCKER_EXIT" -ne 0 ]]; then
+    echo "[CRUOR] RENDER FAILED (exit $DOCKER_EXIT) — voir $ERROR_LOG" >&2
+    cat > "$DONE_FILE" <<EOF
+STATUS=ERROR
+SCENES=$SCENES
+RENDER_TIME=${RENDER_TIME}s
+ERROR_LOG=$ERROR_LOG
+EOF
+    exit "$DOCKER_EXIT"
+  fi
+
+  DURATION=$(ffprobe -v quiet -show_entries format=duration \
+    -of default=noprint_wrappers=1:nokey=1 "$STAGED" 2>/dev/null || echo "0")
+
+  echo "[CRUOR] Assemblage OK — staged ${DURATION}s, ${RENDER_TIME}s de calcul"
+
+  cat > "$DONE_FILE" <<EOF
+STATUS=OK
+STAGED=$STAGED
+DURATION=${DURATION}s
+RENDER_TIME=${RENDER_TIME}s
+FORMAT=$FORMAT
+EOF
+
+  echo "[CRUOR] Signal  : $DONE_FILE"
+  echo "[CRUOR] DONE    : $STAGED"
+  exit 0
+fi
+
+# ─── Mode scène unique ────────────────────────────────────────────────────────
+if [[ -z "$SCENE_CLASS" || -z "$OUTPUT" ]]; then
+  echo "[CRUOR] ERREUR : --scene-class et --output obligatoires (mode scène unique)." >&2
   exit 1
 fi
 
 OUTPUT_DIR="$(dirname "$OUTPUT")"
-OUTPUT_NAME="$(basename "$OUTPUT")"
-DONE_FILE="$OUTPUT_DIR/DONE.txt"
-ERROR_LOG="$OUTPUT_DIR/error.log"
-WORKSPACE="$(pwd)"
+DONE_FILE="${OUTPUT_DIR}/DONE_${SCENE_CLASS}.txt"
+ERROR_LOG="${OUTPUT_DIR}/error_${SCENE_CLASS}.log"
 
 mkdir -p "$OUTPUT_DIR"
 
-echo "[CRUOR] Render Manim headless..."
-echo "  Scene  : $SCENE"
+echo "[CRUOR] Render scène : $SCENE_CLASS"
+echo "  Scenes : $SCENES"
 echo "  Output : $OUTPUT"
-echo "  Format : $FORMAT"
-echo "  Image  : $DOCKER_IMAGE"
 
 START_TS=$(date +%s)
 
-# --- Docker render ---
-# Monte le workspace en /workspace dans le container.
-# Xvfb gère l'affichage OpenGL headless.
-# Manim écrit dans /tmp/media/, on récupère le MP4 et on le déplace.
-SCENE_IN_CONTAINER="/workspace/$SCENE"
-MEDIA_DIR="/tmp/media_cruor"
-
 docker run --rm \
-  --name "angron_cruor_$$" \
+  --name "angron_cruor_${SCENE_CLASS}_$$" \
   -v "${WORKSPACE}:/workspace" \
   -e DISPLAY=:99 \
   "$DOCKER_IMAGE" \
   bash -c "
     set -e
-    Xvfb :99 -screen 0 1x1x24 2>/dev/null &
-    sleep 1
+    Xvfb :99 -screen 0 1920x1080x24 2>/dev/null &
+    sleep 2
+    MEDIA_DIR='/tmp/media_cruor'
 
-    manim render \
-      --media_dir ${MEDIA_DIR} \
-      --format mp4 \
-      --fps 60 \
-      \"${SCENE_IN_CONTAINER}\" AngronScene \
-      2>&1
+    manimgl '/workspace/${SCENES}' '${SCENE_CLASS}' \
+      --write_to_movie \
+      --media_dir \"\$MEDIA_DIR\" 2>&1
 
-    # Manim crée une arborescence — on cherche le MP4 produit
-    MP4=\$(find ${MEDIA_DIR} -name '*.mp4' | head -1)
+    MP4=\$(find \"\$MEDIA_DIR\" -name '*.mp4' | sort | tail -1)
     if [[ -z \"\$MP4\" ]]; then
-      echo 'ERROR: aucun MP4 trouvé dans ${MEDIA_DIR}' >&2
+      echo 'ERROR: aucun MP4 trouvé' >&2
       exit 2
     fi
-
-    cp \"\$MP4\" /workspace/${OUTPUT}
-    echo \"MP4 copié : \$MP4 → /workspace/${OUTPUT}\"
+    cp \"\$MP4\" '/workspace/${OUTPUT}'
+    echo \"MP4 : \$MP4 → /workspace/${OUTPUT}\"
   " 2>&1 | tee "$ERROR_LOG"
 
 DOCKER_EXIT="${PIPESTATUS[0]}"
@@ -99,34 +202,23 @@ END_TS=$(date +%s)
 RENDER_TIME=$(( END_TS - START_TS ))
 
 if [[ "$DOCKER_EXIT" -ne 0 ]]; then
-  echo "[CRUOR] RENDER FAILED (exit $DOCKER_EXIT) — voir $ERROR_LOG" >&2
-  cat > "$DONE_FILE" <<EOF
-STATUS=ERROR
-SCENE=$SCENE
-FORMAT=$FORMAT
-RENDER_TIME=${RENDER_TIME}s
-ERROR_LOG=$ERROR_LOG
-EOF
+  echo "[CRUOR] RENDER FAILED (exit $DOCKER_EXIT)" >&2
+  echo "STATUS=ERROR" > "$DONE_FILE"
   exit "$DOCKER_EXIT"
 fi
 
-# --- Extraire durée et frames via ffprobe ---
 DURATION=$(ffprobe -v quiet -show_entries format=duration \
   -of default=noprint_wrappers=1:nokey=1 "$OUTPUT" 2>/dev/null || echo "0")
-FRAMES=$(ffprobe -v quiet -select_streams v:0 \
-  -show_entries stream=nb_frames \
-  -of default=noprint_wrappers=1:nokey=1 "$OUTPUT" 2>/dev/null || echo "0")
 
-echo "[CRUOR] Render OK — durée ${DURATION}s, ${FRAMES} frames, ${RENDER_TIME}s de calcul"
+echo "[CRUOR] OK — ${SCENE_CLASS} : ${DURATION}s en ${RENDER_TIME}s"
 
 cat > "$DONE_FILE" <<EOF
 STATUS=OK
+SCENE_CLASS=$SCENE_CLASS
 OUTPUT=$OUTPUT
 DURATION=${DURATION}s
-FRAMES=$FRAMES
 RENDER_TIME=${RENDER_TIME}s
-FORMAT=$FORMAT
 EOF
 
-echo "[CRUOR] Signal  : $DONE_FILE"
-echo "[CRUOR] DONE    : $OUTPUT"
+echo "[CRUOR] Signal : $DONE_FILE"
+echo "[CRUOR] DONE   : $OUTPUT"
