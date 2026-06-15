@@ -24,7 +24,7 @@ config.background_color = BG
 
 def _clear_all(scene):
     if scene.mobjects:
-        scene.play(FadeOut(*scene.mobjects), run_time=0.15)
+        scene.play(*[FadeOut(m) for m in list(scene.mobjects)], run_time=0.15)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -441,4 +441,4 @@ class S07Conclusion(InteractiveScene):
         )
         self.play(FadeIn(cta, shift=UP * 0.3), run_time=0.7)
         self.wait(0.88)
-        self.play(FadeOut(*self.mobjects), run_time=0.5)
+        self.play(*[FadeOut(m) for m in list(self.mobjects)], run_time=0.5)
