@@ -7,10 +7,6 @@ on:
         description: "ID du projet (ex: 001, 002)"
         required: true
         default: "001"
-      scene_class:
-        description: "Classe Manim a rendre (ex: AngronScene)"
-        required: true
-        default: "AngronScene"
       format:
         description: "Format : short ou longform"
         required: false
@@ -22,88 +18,52 @@ jobs:
 
     permissions:
       contents: write
+      packages: read
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Cache apt packages
-        uses: actions/cache@v4
+      - name: Login GHCR (pull image manimgl)
+        uses: docker/login-action@v3
         with:
-          path: /var/cache/apt/archives
-          key: apt-manim-${{ runner.os }}-v2
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install system dependencies
+      - name: Render toutes les scenes (manimgl via Docker)
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            ffmpeg \
-            libcairo2-dev \
-            libpango1.0-dev \
-            xvfb \
-            texlive-latex-extra \
-            texlive-fonts-recommended \
-            cm-super \
-            texlive-lang-french \
-            dvipng \
-            dvisvgm \
-            fonts-cmu
-
-      - name: Cache pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: pip-manim-${{ runner.os }}-v2
-
-      - name: Install Manim
-        run: pip install manim==0.18.1
-
-      - name: Start Xvfb
-        run: |
-          Xvfb :99 -screen 0 1920x1080x24 &
-          sleep 2
-        env:
-          DISPLAY: :99
-
-      - name: Render scene
-        env:
-          DISPLAY: :99
-        run: |
-          SCENE_FILE="F03_CRUOR/CODEBASE/scene_${{ inputs.project_id }}.py"
-          OUTPUT="F03_CRUOR/OUT/cruor_render_${{ inputs.project_id }}.mp4"
-          mkdir -p F03_CRUOR/OUT
-          manim render \
-            --media_dir /tmp/media_cruor \
-            --format mp4 \
-            --fps 60 \
-            --resolution 1080,1920 \
-            "$SCENE_FILE" \
-            ${{ inputs.scene_class }}
-          MP4=$(find /tmp/media_cruor -name "*.mp4" | head -1)
-          echo "MP4 trouve : $MP4"
-          cp "$MP4" "$OUTPUT"
-          ls -lh F03_CRUOR/OUT/
+          SCENES="F03_CRUOR/CODEBASE/scenes_${{ inputs.project_id }}.py"
+          OUT_DIR="F03_CRUOR/OUT"
+          STAGED="F03_CRUOR/OUT/staged_${{ inputs.project_id }}.mp4"
+          mkdir -p "$OUT_DIR"
+          bash F03_CRUOR/CODEBASE/render.sh \
+            --scenes  "$SCENES" \
+            --all \
+            --out-dir "$OUT_DIR" \
+            --staged  "$STAGED" \
+            --format  "${{ inputs.format }}"
 
       - name: Mettre a jour ledger STATE_6_GATE
         run: |
-          python3 -c "
+          python3 - <<'PYEOF'
           import json, datetime
           with open('.angron/ledger.json') as f:
               l = json.load(f)
-          pid = '${{ inputs.project_id }}'
-          output = f'F03_CRUOR/OUT/cruor_render_{pid}.mp4'
+          pid = "${{ inputs.project_id }}"
+          staged = f"F03_CRUOR/OUT/staged_{pid}.mp4"
           l['projet_actif']['etape'] = 'STATE_6_GATE'
-          l['projet_actif']['fichiers']['render_brut'] = output
+          l['projet_actif']['fichiers']['staged'] = staged
           l['projet_actif']['derniere_mise_a_jour'] = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
           with open('.angron/ledger.json', 'w') as f:
               json.dump(l, f, indent=2, ensure_ascii=False)
           print('Ledger STATE_6_GATE OK')
-          "
+          PYEOF
 
       - name: Commit render et ledger
         run: |
           git config user.name "ANGRON-CRUOR"
           git config user.email "cruor@angron.bot"
-          git add F03_CRUOR/OUT/cruor_render_${{ inputs.project_id }}.mp4 .angron/ledger.json
+          git add F03_CRUOR/OUT/staged_${{ inputs.project_id }}.mp4 .angron/ledger.json
           git diff --cached --quiet || git commit -m "ANGRON ${{ inputs.project_id }} - STATE_6_GATE : render brut CRUOR produit"
           git push
