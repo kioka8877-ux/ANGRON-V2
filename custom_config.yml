@@ -1,0 +1,7 @@
+# manimgl portrait config — 9:16 vertical (1080x1920)
+camera_config:
+  pixel_height: 1920
+  pixel_width: 1080
+  fps: 60
+
+frame_height: 14.222222222222221
