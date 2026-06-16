@@ -94,7 +94,7 @@ while IFS= read -r SCENE_CLS; do
   fi
   echo "[DEBUG] Dimensions $SCENE_CLS : $(ffprobe -v quiet -select_streams v:0 -show_entries stream=width,height -of csv=p=0 "$MP4" 2>/dev/null)"
   cp "$MP4" "${OUT_BASE}/${SCENE_CLS}.mp4"
-  echo "[CRUOR] $SCENE_CLS → ${OUT_BASE}/${SCENE_CLS}.mp4"
+  echo "[CRUOR] $SCENE_CLS -> ${OUT_BASE}/${SCENE_CLS}.mp4"
 done < <(grep -oP '^class \K\w+(?=\(InteractiveScene\))' "/workspace/${MANIMGL_SCENES}" | sort)
 
 python3 /workspace/F03_CRUOR/CODEBASE/stage.py \
