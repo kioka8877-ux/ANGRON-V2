@@ -32,6 +32,13 @@ def _clear_all(scene):
 # Bloc 1: "Why Lameen's Trivela is more spectacular than you think." (0.0–5.08s)
 # ═══════════════════════════════════════════════════════════════════════════════
 class S01HookQuestion(InteractiveScene):
+    CONFIG = {
+        "camera_config": {
+            "pixel_width": 1080,
+            "pixel_height": 1920,
+            "fps": 60,
+        },
+    }
     def construct(self):
         # Line 1
         line1 = Tex(r"Why Lamine's", color=TEXT_C, font_size=72)
@@ -63,6 +70,13 @@ class S01HookQuestion(InteractiveScene):
 # Bloc 3: "You don't just change direction."    (3.48–5.88s relative)
 # ═══════════════════════════════════════════════════════════════════════════════
 class S02FootKick(InteractiveScene):
+    CONFIG = {
+        "camera_config": {
+            "pixel_width": 1080,
+            "pixel_height": 1920,
+            "fps": 60,
+        },
+    }
     def construct(self):
         # BLOC 2 ──────────────────────────────────────────────────────────────
         t2a = Tex(r"Kick with the", color=TEXT_C, font_size=60)
@@ -115,6 +129,13 @@ class S02FootKick(InteractiveScene):
 # Bloc 4: "You flip the spin ... F = ρ r v × ω" (0.0–9.18s relative)
 # ═══════════════════════════════════════════════════════════════════════════════
 class S03SpinAxis(InteractiveScene):
+    CONFIG = {
+        "camera_config": {
+            "pixel_width": 1080,
+            "pixel_height": 1920,
+            "fps": 60,
+        },
+    }
     def construct(self):
         # Part A: "You flip the spin axis." [0-2.5s]
         flip_line1 = Tex(r"You flip the", color=TEXT_C, font_size=64)
@@ -181,6 +202,13 @@ class S03SpinAxis(InteractiveScene):
 # Bloc 6: "It decides every curve in football." (2.44–5.02s)
 # ═══════════════════════════════════════════════════════════════════════════════
 class S04MagnusEffect(InteractiveScene):
+    CONFIG = {
+        "camera_config": {
+            "pixel_width": 1080,
+            "pixel_height": 1920,
+            "fps": 60,
+        },
+    }
     def construct(self):
         # BLOC 5: Magnus Effect title ─────────────────────────────────────────
         magnus_title = Tex(r"The Magnus Effect.", color=PRIMARY, font_size=72)
@@ -230,6 +258,13 @@ class S04MagnusEffect(InteractiveScene):
 # Blocs 7–15 — rapid-fire comparison
 # ═══════════════════════════════════════════════════════════════════════════════
 class S05Comparison(InteractiveScene):
+    CONFIG = {
+        "camera_config": {
+            "pixel_width": 1080,
+            "pixel_height": 1920,
+            "fps": 60,
+        },
+    }
     def construct(self):
         # Column headers
         left_hdr  = Tex(r"Normal", color=TEXT_DIM, font_size=52).move_to(LEFT * 1.1 + UP * 3.5)
@@ -313,6 +348,13 @@ class S05Comparison(InteractiveScene):
 # Bloc 19: "The goalkeeper never had a chance." (10.70–12.82s)
 # ═══════════════════════════════════════════════════════════════════════════════
 class S06Numbers(InteractiveScene):
+    CONFIG = {
+        "camera_config": {
+            "pixel_width": 1080,
+            "pixel_height": 1920,
+            "fps": 60,
+        },
+    }
     def construct(self):
         # BLOC 16: 70° off-axis diagram ────────────────────────────────────────
         # Central point, axis line, foot line at 70°
@@ -386,6 +428,13 @@ class S06Numbers(InteractiveScene):
 # Bloc 24: "The equations don't." (9.84–11.38s) + CTA
 # ═══════════════════════════════════════════════════════════════════════════════
 class S07Conclusion(InteractiveScene):
+    CONFIG = {
+        "camera_config": {
+            "pixel_width": 1080,
+            "pixel_height": 1920,
+            "fps": 60,
+        },
+    }
     def construct(self):
         # BLOC 20: "This isn't a trick shot." ──────────────────────────────────
         not_trick = Tex(r"This isn't", color=TEXT_C, font_size=60)
