@@ -217,7 +217,7 @@ class S05Comparison(InteractiveScene):
         self.play(FadeIn(cw_spin, shift=LEFT * 0.2), run_time=0.6)
         self.wait(0.46)
 
-        ball_right = Tex(r"ball $\rightarrow$", color=TEXT_C, font_size=44)
+        ball_right = Tex(r"\text{ball} \rightarrow", color=TEXT_C, font_size=44)
         ball_right.move_to(LEFT * 1.1 + UP * 0.5)
         self.play(FadeIn(ball_right, shift=RIGHT * 0.3), run_time=0.5)
         self.wait(0.32)
@@ -247,7 +247,7 @@ class S05Comparison(InteractiveScene):
         self.play(FadeIn(same_body), run_time=0.5)
         self.wait(0.62)
 
-        ball_left = Tex(r"$\leftarrow$ ball", color=PRIMARY, font_size=44)
+        ball_left = Tex(r"\leftarrow \text{ball}", color=PRIMARY, font_size=44)
         ball_left.move_to(RIGHT * 1.1 + DOWN * 0.5)
         self.play(FadeIn(ball_left, shift=LEFT * 0.3), run_time=0.6)
         self.wait(1.58)
