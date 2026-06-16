@@ -4,21 +4,25 @@ on:
   workflow_dispatch:
     inputs:
       project_id:
-        description: "ID du projet (ex: 001, 002)"
+        description: "ID du projet (ex: 003, 004)"
         required: true
-        default: "001"
+        default: "003"
       audio:
         description: "Chemin audio voix (ex: F02_LACERAT/IN/voice_002.mp3)"
         required: true
-        default: "F02_LACERAT/IN/Generated-Audio-June-14_-2026-8_19AM.mp3"
+        default: "F02_LACERAT/IN/voice_002.mp3"
       hook:
-        description: "Chemin hook clip (ex: F02_LACERAT/IN/HOOK/hook_ready.mp4) — requis si mode=hook"
+        description: "Chemin hook clip (ex: F02_LACERAT/IN/HOOK/hook_ready.mp4) — requis si mode=hook ou image_bg"
+        required: false
+        default: ""
+      bg_image:
+        description: "Chemin image fond (ex: F02_LACERAT/IN/bg_lamine.jpg) — requis si mode=image_bg"
         required: false
         default: ""
       mode:
-        description: "Mode : math_script, math_no_script, hook"
+        description: "Mode : math_script, math_no_script, hook, image_bg"
         required: true
-        default: "math_script"
+        default: "hook"
       format:
         description: "Format : short ou longform"
         required: false
@@ -40,7 +44,7 @@ jobs:
       - name: Install FFmpeg
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends ffmpeg
+          sudo apt-get install -y --no-install-recommends ffmpeg bc
 
       - name: Run finish.sh F04_NAILS
         run: |
@@ -48,17 +52,26 @@ jobs:
           chmod +x F04_NAILS/CODEBASE/finish.sh
           VIDEO="F03_CRUOR/OUT/cruor_render_${{ inputs.project_id }}.mp4"
           OUTPUT="F04_NAILS/OUT/nails_out_${{ inputs.project_id }}.mp4"
+
           HOOK_ARG=""
           if [[ -n "${{ inputs.hook }}" ]]; then
             HOOK_ARG="--hook ${{ inputs.hook }}"
           fi
+
+          BG_ARG=""
+          if [[ -n "${{ inputs.bg_image }}" ]]; then
+            BG_ARG="--bg-image ${{ inputs.bg_image }}"
+          fi
+
           bash F04_NAILS/CODEBASE/finish.sh \
-            --video  "$VIDEO" \
+            --staged "$VIDEO" \
             --audio  "${{ inputs.audio }}" \
             $HOOK_ARG \
+            $BG_ARG \
             --mode   "${{ inputs.mode }}" \
             --format "${{ inputs.format }}" \
             --output "$OUTPUT"
+
           ls -lh F04_NAILS/OUT/
 
       - name: Mettre a jour ledger STATE_8
@@ -83,5 +96,5 @@ jobs:
           git config user.name "ANGRON-NAILS"
           git config user.email "nails@angron.bot"
           git add F04_NAILS/OUT/nails_out_${{ inputs.project_id }}.mp4 .angron/ledger.json
-          git diff --cached --quiet || git commit -m "ANGRON ${{ inputs.project_id }} - STATE_8 : fusion audio+video NAILS OK"
+          git diff --cached --quiet || git commit -m "ANGRON ${{ inputs.project_id }} - STATE_8 : fusion NAILS OK (mode ${{ inputs.mode }})"
           git push
