@@ -14,7 +14,7 @@
     "mode": "hook",
     "concept": "Pourquoi la trivela de Lamine est si précise par rapport aux autres joueurs",
     "format": "short",
-    "etape": "STATE_6_GATE",
+    "etape": "STATE_8",
     "hook": {
       "source_url": null,
       "hook_ready_path": "F02_LACERAT/IN/HOOK/hook_ready.mp4",
@@ -28,7 +28,7 @@
       "scenes_py": "F03_CRUOR/CODEBASE/scenes_003.py",
       "renders": [],
       "staged": "F03_CRUOR/OUT/cruor_render_003.mp4",
-      "nails_out": null,
+      "nails_out": "F04_NAILS/OUT/nails_out_001.mp4",
       "final": null
     },
     "validations": {
@@ -37,7 +37,7 @@
       "render_brut": false
     },
     "debut": "2026-06-15T16:10:00Z",
-    "derniere_mise_a_jour": "2026-06-16T05:11:48Z"
+    "derniere_mise_a_jour": "2026-06-16T06:05:36Z"
   },
   "historique": [
     {
