@@ -110,7 +110,7 @@ class S03SpinAxis(InteractiveScene):
         cw_tip_text.move_to(LEFT  * 1.0 + DOWN * 1.2)
 
         ccw_label    = T("Trivela", color=PRIMARY,  size=28).move_to(RIGHT * 1.0 + DOWN * 0.2)
-        ccw_tip_text = Tex(r"ightarrow", color=PRIMARY,  font_size=52)
+        ccw_tip_text = Tex(r"\rightarrow", color=PRIMARY,  font_size=52)
         ccw_tip_text.move_to(RIGHT * 1.0 + DOWN * 1.2)
 
         sep = DashedLine(UP * 0.2, DOWN * 2.2, color=TEXT_DIM, dash_length=0.12)
@@ -126,7 +126,7 @@ class S03SpinAxis(InteractiveScene):
         self.play(ccw_tip_text.animate.scale(1.3).set_color(SECONDARY), run_time=0.5)
         self.wait(0.5)
 
-        eq_intro  = Tex(r"F = ho \cdot r \cdot v 	imes \omega", color=SECONDARY, font_size=52)
+        eq_intro  = Tex(r"F = \rho \cdot r \cdot v 	imes \omega", color=SECONDARY, font_size=52)
         eq_intro.move_to(DOWN * 3.0)
         underline = Line(
             eq_intro.get_left()  + DOWN * 0.15,
@@ -199,7 +199,7 @@ class S05Comparison(InteractiveScene):
         self.wait(0.46)
 
         ball_r = T("ball", color=TEXT_C, size=24)
-        arr_r  = Tex(r"ightarrow", color=TEXT_C, font_size=26)
+        arr_r  = Tex(r"\rightarrow", color=TEXT_C, font_size=26)
         ball_right = VGroup(ball_r, arr_r).arrange(RIGHT, buff=0.1)
         ball_right.move_to(LEFT * 1.0 + UP * 0.5)
         self.play(FadeIn(ball_right, shift=RIGHT * 0.3), run_time=0.5)
