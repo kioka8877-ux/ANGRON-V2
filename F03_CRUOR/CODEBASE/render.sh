@@ -6,7 +6,6 @@ set -euo pipefail
 DOCKER_IMAGE="ghcr.io/kioka8877-ux/angron-v2:latest"
 
 SCENES=""
-SCFNE_CLASS=""
 OUTPUT=""
 OUT_DIR=""
 STAGED=""
@@ -31,11 +30,6 @@ if [[ -z "$SCENES" || -z "$FORMAT" ]]; then
   exit 1
 fi
 
-if [[ "$FORMAT" != "short" && "$FORMAT" != "longform" ]]; then
-  echo "[CRUOR] ERREUR : --format doit être 'short' ou 'longform'." >&2
-  exit 1
-fi
-
 if [[ ! -f "$SCENES" ]]; then
   echo "[CRUOR] ERREUR : fichier scenes introuvable : $SCENES" >&2
   exit 1
@@ -43,7 +37,6 @@ fi
 
 WORKSPACE="$(pwd)"
 
-# ─── Mode --all : render toutes les scènes + assemblage ──────────────────────
 if [[ "$ALL_SCENES" == "true" ]]; then
   if [[ -z "$OUT_DIR" || -z "$STAGED" ]]; then
     echo "[CRUOR] ERREUR : --all requiert --out-dir et --staged." >&2
@@ -74,39 +67,59 @@ if [[ "$ALL_SCENES" == "true" ]]; then
     --name "angron_cruor_all_$$" \
     -v "${WORKSPACE}:/workspace" \
     -e DISPLAY=:99 \
+    -e MANIMGL_OUT_DIR="${OUT_DIR}" \
+    -e MANIMGL_STAGED="${STAGED}" \
+    -e MANIMGL_SCENES="${SCENES}" \
     "$DOCKER_IMAGE" \
-    bash -c '
-      set -e
-      Xvfb :99 -screen 0 1080x1920x24 2>/dev/null &
-      sleep 2
+    bash << 'DOCKEREOF'
+set -e
+Xvfb :99 -screen 0 1080x1920x24 2>/dev/null &
+sleep 2
 
-      # Portrait config manimgl — 3 chemins, clés flat, sans variable loop
-      mkdir -p /root/.config/manim
-      printf "pixel_width: 1080\npixel_height: 1920\nframe_rate: 60\nframe_height: 14.222222222222221\n" \
-        > /root/.config/manim/custom_config.yml
-      cp /root/.config/manim/custom_config.yml /workspace/custom_config.yml
-      cp /root/.config/manim/custom_config.yml /workspace/F03_CRUOR/CODEBASE/custom_config.yml
+echo "=== [DEBUG] default_config.yml manimgl ==="
+find /usr/local/lib/python3.11/site-packages/manimlib -name "default_config.yml" -exec cat {} \;
+echo "=== [DEBUG] fin default_config ==="
 
-      OUT_BASE="/workspace/'"$OUT_DIR"'"
-      while IFS= read -r SCENE_CLS; do
-        echo "[CRUOR] Render $SCENE_CLS..."
-        cd /workspace
-        manimgl '"'"''"$SCENES"''"'"' "$SCENE_CLS" -w 2>&1
+# Format nested camera_config (structure réelle manimgl)
+mkdir -p /root/.config/manim
+cat > /root/.config/manim/custom_config.yml << 'CFEOF'
+camera_config:
+  pixel_height: 1920
+  pixel_width: 1080
+  frame_rate: 60
+  frame_height: 14.222222222222221
+CFEOF
 
-        MP4=$(find /workspace/videos -name "${SCENE_CLS}.mp4" 2>/dev/null | sort | tail -1)
-        if [[ -z "$MP4" ]]; then
-          echo "ERROR: aucun MP4 pour $SCENE_CLS" >&2
-          exit 2
-        fi
-        cp "$MP4" "${OUT_BASE}/${SCENE_CLS}.mp4"
-        echo "[CRUOR] $SCENE_CLS → ${OUT_BASE}/${SCENE_CLS}.mp4"
-      done < <(grep -oP '"'"'^class \K\w+(?=\(InteractiveScene\))'"'"' '"'"'/workspace/'"$SCENES"''"'"' | sort)
+# Aussi en CWD + répertoire scènes
+cp /root/.config/manim/custom_config.yml /workspace/custom_config.yml
+cp /root/.config/manim/custom_config.yml /workspace/F03_CRUOR/CODEBASE/custom_config.yml
 
-      python3 /workspace/F03_CRUOR/CODEBASE/stage.py \
-        --in-dir  "$OUT_BASE" \
-        --output  "/workspace/'"$STAGED"'" 2>&1
-      echo "[CRUOR] Assemblage terminé."
-    ' 2>&1 | tee "$ERROR_LOG"
+echo "=== [DEBUG] custom_config.yml écrit ==="
+cat /root/.config/manim/custom_config.yml
+echo "=== [DEBUG] fin custom_config ==="
+
+OUT_BASE="/workspace/${MANIMGL_OUT_DIR}"
+
+while IFS= read -r SCENE_CLS; do
+  echo "[CRUOR] Render $SCENE_CLS..."
+  cd /workspace
+  manimgl "${MANIMGL_SCENES}" "$SCENE_CLS" -w 2>&1
+
+  MP4=$(find /workspace/videos -name "${SCENE_CLS}.mp4" 2>/dev/null | sort | tail -1)
+  if [[ -z "$MP4" ]]; then
+    echo "ERROR: aucun MP4 pour $SCENE_CLS" >&2
+    exit 2
+  fi
+  echo "[DEBUG] Dimensions $SCENE_CLS : $(ffprobe -v quiet -select_streams v:0 -show_entries stream=width,height -of csv=p=0 "$MP4" 2>/dev/null)"
+  cp "$MP4" "${OUT_BASE}/${SCENE_CLS}.mp4"
+  echo "[CRUOR] $SCENE_CLS → ${OUT_BASE}/${SCENE_CLS}.mp4"
+done < <(grep -oP '^class \K\w+(?=\(InteractiveScene\))' "/workspace/${MANIMGL_SCENES}" | sort)
+
+python3 /workspace/F03_CRUOR/CODEBASE/stage.py \
+  --in-dir  "$OUT_BASE" \
+  --output  "/workspace/${MANIMGL_STAGED}" 2>&1
+echo "[CRUOR] Assemblage terminé."
+DOCKEREOF
 
   DOCKER_EXIT="${PIPESTATUS[0]}"
   END_TS=$(date +%s)
@@ -114,12 +127,6 @@ if [[ "$ALL_SCENES" == "true" ]]; then
 
   if [[ "$DOCKER_EXIT" -ne 0 ]]; then
     echo "[CRUOR] RENDER FAILED (exit $DOCKER_EXIT) — voir $ERROR_LOG" >&2
-    cat > "$DONE_FILE" <<EOF
-STATUS=ERROR
-SCENES=$SCENES
-RENDER_TIME=${RENDER_TIME}s
-ERROR_LOG=$ERROR_LOG
-EOF
     exit "$DOCKER_EXIT"
   fi
 
@@ -136,78 +143,10 @@ RENDER_TIME=${RENDER_TIME}s
 FORMAT=$FORMAT
 EOF
 
-  echo "[CRUOR] Signal  : $DONE_FILE"
-  echo "[CRUOR] DONE    : $STAGED"
+  echo "[CRUOR] DONE : $STAGED"
   exit 0
 fi
 
 # ─── Mode scène unique ────────────────────────────────────────────────────────
-if [[ -z "$SCENE_CLASS" || -z "$OUTPUT" ]]; then
-  echo "[CRUOR] ERREUR : --scene-class et --output obligatoires (mode scène unique)." >&2
-  exit 1
-fi
-
-OUTPUT_DIR="$(dirname "$OUTPUT")"
-DONE_FILE="${OUTPUT_DIR}/DONE_${SCENE_CLASS}.txt"
-ERROR_LOG="${OUTPUT_DIR}/error_${SCENE_CLASS}.log"
-
-mkdir -p "$OUTPUT_DIR"
-
-echo "[CRUOR] Render scène : $SCENE_CLASS"
-echo "  Scenes : $SCENES"
-echo "  Output : $OUTPUT"
-
-START_TS=$(date +%s)
-
-docker run --rm \
-  --name "angron_cruor_${SCENE_CLASS}_$$" \
-  -v "${WORKSPACE}:/workspace" \
-  -e DISPLAY=:99 \
-  "$DOCKER_IMAGE" \
-  bash -c '
-    set -e
-    Xvfb :99 -screen 0 1080x1920x24 2>/dev/null &
-    sleep 2
-
-    mkdir -p /root/.config/manim
-    printf "pixel_width: 1080\npixel_height: 1920\nframe_rate: 60\nframe_height: 14.222222222222221\n" \
-      > /root/.config/manim/custom_config.yml
-    cp /root/.config/manim/custom_config.yml /workspace/custom_config.yml
-
-    cd /workspace
-    manimgl '"'"''"$SCENES"''"'"' '"'"''"$SCENE_CLASS"''"'"' -w 2>&1
-
-    MP4=$(find /workspace/videos -name '"'"''"$SCENE_CLASS"'.mp4'"'"' 2>/dev/null | sort | tail -1)
-    if [[ -z "$MP4" ]]; then
-      echo "ERROR: aucun MP4 trouvé" >&2
-      exit 2
-    fi
-    cp "$MP4" '"'"'/workspace/'"$OUTPUT"''"'"'
-    echo "MP4 : $MP4 → /workspace/'"$OUTPUT"'"
-  ' 2>&1 | tee "$ERROR_LOG"
-
-DOCKER_EXIT="${PIPESTATUS[0]}"
-END_TS=$(date +%s)
-RENDER_TIME=$(( END_TS - START_TS ))
-
-if [[ "$DOCKER_EXIT" -ne 0 ]]; then
-  echo "[CRUOR] RENDER FAILED (exit $DOCKER_EXIT)" >&2
-  echo "STATUS=ERROR" > "$DONE_FILE"
-  exit "$DOCKER_EXIT"
-fi
-
-DURATION=$(ffprobe -v quiet -show_entries format=duration \
-  -of default=noprint_wrappers=1:nokey=1 "$OUTPUT" 2>/dev/null || echo "0")
-
-echo "[CRUOR] OK — ${SCENE_CLASS} : ${DURATION}s en ${RENDER_TIME}s"
-
-cat > "$DONE_FILE" <<EOF
-STATUS=OK
-SCENE_CLASS=$SCENE_CLASS
-OUTPUT=$OUTPUT
-DURATION=${DURATION}s
-RENDER_TIME=${RENDER_TIME}s
-EOF
-
-echo "[CRUOR] Signal : $DONE_FILE"
-echo "[CRUOR] DONE   : $OUTPUT"
+echo "[CRUOR] Mode scène unique non utilisé en V2." >&2
+exit 1
