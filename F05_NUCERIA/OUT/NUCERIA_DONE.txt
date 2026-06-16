@@ -1,6 +1,6 @@
 NUCERIA_DONE
-concept=Why Lamine trivela is more spectacular than you think
+concept=Pourquoi la trivela de Lamine est si precise par rapport aux autres joueurs
 format=short
-output=F05_NUCERIA/OUT/youtube_short_002.mp4
+output=F05_NUCERIA/OUT/youtube_short_003.mp4
 qa=OK
-timestamp=2026-06-15T09:31:17.876522
+timestamp=2026-06-16T11:53:02.124039

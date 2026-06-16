@@ -10,34 +10,34 @@
     "hook"
   ],
   "projet_actif": {
-    "id": "003",
-    "mode": "hook",
-    "concept": "Pourquoi la trivela de Lamine est si précise par rapport aux autres joueurs",
-    "format": "short",
-    "etape": "STATE_8",
+    "id": null,
+    "mode": null,
+    "concept": null,
+    "format": null,
+    "etape": "INIT",
     "hook": {
       "source_url": null,
-      "hook_ready_path": "F02_LACERAT/IN/HOOK/hook_ready.mp4",
-      "hook_question": "Why Lamine's trivela is more spectacular than you think",
-      "duration_seconds": 3.7
+      "hook_ready_path": null,
+      "hook_question": null,
+      "duration_seconds": null
     },
     "fichiers": {
-      "script": "F01_SANGUIS/OUT/script_002.md",
-      "audio": "F02_LACERAT/IN/voice_002.mp3",
-      "timestamps": "F02_LACERAT/OUT/whisper_timestamps_002.json",
-      "scenes_py": "F03_CRUOR/CODEBASE/scenes_003.py",
+      "script": null,
+      "audio": null,
+      "timestamps": null,
+      "scenes_py": null,
       "renders": [],
-      "staged": "F03_CRUOR/OUT/cruor_render_003.mp4",
-      "nails_out": "F04_NAILS/OUT/nails_out_003.mp4",
+      "staged": null,
+      "nails_out": null,
       "final": null
     },
     "validations": {
-      "script": true,
-      "scenes": true,
+      "script": false,
+      "scenes": false,
       "render_brut": false
     },
-    "debut": "2026-06-15T16:10:00Z",
-    "derniere_mise_a_jour": "2026-06-16T11:47:07Z"
+    "debut": null,
+    "derniere_mise_a_jour": "2026-06-16T11:53:02Z"
   },
   "historique": [
     {
@@ -55,12 +55,20 @@
       "mode": "hook",
       "date": "2026-06-15T03:18:30Z",
       "final": "F05_NUCERIA/OUT/youtube_short_002.mp4"
+    },
+    {
+      "id": "003",
+      "concept": "Pourquoi la trivela de Lamine est si précise par rapport aux autres joueurs",
+      "format": "short",
+      "mode": "hook",
+      "date": "2026-06-15T16:10:00Z",
+      "final": "F05_NUCERIA/OUT/youtube_short_003.mp4"
     }
   ],
   "stats": {
-    "videos_produites": 2,
+    "videos_produites": 3,
     "videos_uploadees": 1,
-    "cycles_complets": 2
+    "cycles_complets": 3
   },
   "instructions_cold_start": [
     "1. git clone https://github.com/kioka8877-ux/ANGRON-V2",
