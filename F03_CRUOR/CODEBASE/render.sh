@@ -63,7 +63,7 @@ if [[ "$ALL_SCENES" == "true" ]]; then
 
   START_TS=$(date +%s)
 
-  docker run --rm \
+  docker run -i --rm \
     --name "angron_cruor_all_$$" \
     -v "${WORKSPACE}:/workspace" \
     -e DISPLAY=:99 \
