@@ -1,6 +1,6 @@
 NUCERIA_DONE
-concept=Pourquoi la trivela de Lamine est si precise par rapport aux autres joueurs
+concept=Pourquoi la trivela de Lamine Yamal est plus spectaculaire que vous ne le pensez
 format=short
 output=F05_NUCERIA/OUT/youtube_short_003.mp4
 qa=OK
-timestamp=2026-06-16T11:53:02.124039
+timestamp=2026-06-16T13:35:33.235781

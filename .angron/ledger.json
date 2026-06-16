@@ -10,25 +10,25 @@
     "hook"
   ],
   "projet_actif": {
-    "id": "003",
-    "mode": "hook",
-    "concept": "Pourquoi la trivela de Lamine Yamal est plus spectaculaire que vous ne le pensez",
-    "format": "short",
-    "etape": "STATE_8",
+    "id": null,
+    "mode": null,
+    "concept": null,
+    "format": null,
+    "etape": "INIT",
     "hook": {
       "source_url": null,
-      "hook_ready_path": "F02_LACERAT/IN/HOOK/hook_ready.mp4",
+      "hook_ready_path": null,
       "hook_question": null,
-      "duration_seconds": 3.72
+      "duration_seconds": null
     },
     "fichiers": {
       "script": null,
-      "audio": "F02_LACERAT/IN/voice_002.mp3",
+      "audio": null,
       "timestamps": null,
-      "scenes_py": "F03_CRUOR/CODEBASE/scenes_003.py",
+      "scenes_py": null,
       "renders": [],
-      "staged": "F03_CRUOR/OUT/cruor_render_003.mp4",
-      "nails_out": "F04_NAILS/OUT/nails_out_003.mp4",
+      "staged": null,
+      "nails_out": null,
       "final": null
     },
     "validations": {
@@ -37,7 +37,7 @@
       "render_brut": false
     },
     "debut": null,
-    "derniere_mise_a_jour": "2026-06-16T13:30:00Z"
+    "derniere_mise_a_jour": "2026-06-16T13:35:33Z"
   },
   "historique": [
     {
@@ -63,12 +63,20 @@
       "mode": "hook",
       "date": "2026-06-15T16:10:00Z",
       "final": "F05_NUCERIA/OUT/youtube_short_003.mp4"
+    },
+    {
+      "id": "003",
+      "concept": "Pourquoi la trivela de Lamine Yamal est plus spectaculaire que vous ne le pensez",
+      "format": "short",
+      "mode": "hook",
+      "date": null,
+      "final": "F05_NUCERIA/OUT/youtube_short_003.mp4"
     }
   ],
   "stats": {
-    "videos_produites": 3,
+    "videos_produites": 4,
     "videos_uploadees": 1,
-    "cycles_complets": 3
+    "cycles_complets": 4
   },
   "instructions_cold_start": [
     "1. git clone https://github.com/kioka8877-ux/ANGRON-V2",
