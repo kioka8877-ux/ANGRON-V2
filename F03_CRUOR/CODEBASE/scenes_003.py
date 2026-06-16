@@ -6,6 +6,12 @@ Format : SHORT 9:16 | 1080x1920 | 60fps | 68.32s audio
 """
 
 from manimlib import *
+import os as _os
+_cfg_dir = _os.path.expanduser("~/.config/manim")
+_os.makedirs(_cfg_dir, exist_ok=True)
+with open(_os.path.join(_cfg_dir, "custom_config.yml"), "w") as _f:
+    _f.write("camera:\n  resolution: (1080, 1920)\n  fps: 60\n")
+
 
 # ─── ANGRON_STYLE PALETTE ─────────────────────────────────────────────────────
 BG        = "#171717"
