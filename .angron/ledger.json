@@ -10,22 +10,22 @@
     "hook"
   ],
   "projet_actif": {
-    "id": null,
-    "mode": null,
-    "concept": null,
-    "format": null,
+    "id": "003",
+    "mode": "hook",
+    "concept": "Pourquoi la trivela de Lamine Yamal est plus spectaculaire que vous ne le pensez",
+    "format": "short",
     "etape": "STATE_8",
     "hook": {
       "source_url": null,
-      "hook_ready_path": null,
+      "hook_ready_path": "F02_LACERAT/IN/HOOK/hook_ready.mp4",
       "hook_question": null,
-      "duration_seconds": null
+      "duration_seconds": 3.72
     },
     "fichiers": {
       "script": null,
-      "audio": null,
+      "audio": "F02_LACERAT/IN/voice_002.mp3",
       "timestamps": null,
-      "scenes_py": null,
+      "scenes_py": "F03_CRUOR/CODEBASE/scenes_003.py",
       "renders": [],
       "staged": "F03_CRUOR/OUT/cruor_render_003.mp4",
       "nails_out": "F04_NAILS/OUT/nails_out_003.mp4",
@@ -37,7 +37,7 @@
       "render_brut": false
     },
     "debut": null,
-    "derniere_mise_a_jour": "2026-06-16T13:04:03Z"
+    "derniere_mise_a_jour": "2026-06-16T13:30:00Z"
   },
   "historique": [
     {
