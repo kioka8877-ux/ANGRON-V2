@@ -9,14 +9,6 @@ from manimlib import *
 import os as _os
 import numpy as np
 
-_cfg_dir = _os.path.expanduser("~/.config/manim")
-_os.makedirs(_cfg_dir, exist_ok=True)
-with open(_os.path.join(_cfg_dir, "custom_config.yml"), "w") as _f:
-    _f.write("camera:
-  resolution: (1080, 1920)
-  fps: 60
-")
-
 BG        = "#171717"
 PRIMARY   = "#58C4DD"
 SECONDARY = "#FFF1B6"
