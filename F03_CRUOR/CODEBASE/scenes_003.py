@@ -108,11 +108,11 @@ class S03SpinAxis(InteractiveScene):
         self.play(Write(flip_line2), run_time=0.8)
 
         cw_label  = Tex(r"Normal", color=TEXT_DIM, font_size=36).move_to(LEFT * 1.4 + DOWN * 0.3)
-        cw_tip_text = Tex(r"$\circlearrowleft$", color=HIGHLIGHT, font_size=60)
+        cw_tip_text = Tex(r"$\leftarrow$", color=HIGHLIGHT, font_size=60)
         cw_tip_text.move_to(LEFT * 1.4 + DOWN * 1.4)
 
         ccw_label = Tex(r"Trivela", color=PRIMARY, font_size=36).move_to(RIGHT * 1.4 + DOWN * 0.3)
-        ccw_tip_text = Tex(r"$\circlearrowright$", color=PRIMARY, font_size=60)
+        ccw_tip_text = Tex(r"$\rightarrow$", color=PRIMARY, font_size=60)
         ccw_tip_text.move_to(RIGHT * 1.4 + DOWN * 1.4)
 
         sep = DashedLine(UP * 0.2, DOWN * 2.5, color=TEXT_DIM, dash_length=0.12)
@@ -212,7 +212,7 @@ class S05Comparison(InteractiveScene):
         self.play(Write(normal_shot), run_time=0.9)
         self.wait(0.92)
 
-        cw_spin = Tex(r"$\circlearrowleft$ clockwise", color=HIGHLIGHT, font_size=44)
+        cw_spin = Tex(r"CW (clockwise)", color=HIGHLIGHT, font_size=44)
         cw_spin.move_to(LEFT * 1.1 + UP * 1.5)
         self.play(FadeIn(cw_spin, shift=LEFT * 0.2), run_time=0.6)
         self.wait(0.46)
@@ -237,7 +237,7 @@ class S05Comparison(InteractiveScene):
         self.play(FadeIn(trivela_pop, scale=0.7), run_time=0.4)
         self.wait(0.99)
 
-        ccw_spin = Tex(r"$\circlearrowright$ counter-CW", color=PRIMARY, font_size=44)
+        ccw_spin = Tex(r"CCW (counter-CW)", color=PRIMARY, font_size=44)
         ccw_spin.move_to(RIGHT * 1.1 + UP * 1.5)
         self.play(FadeIn(ccw_spin, shift=RIGHT * 0.2), run_time=0.6)
         self.wait(0.80)
