@@ -31,6 +31,13 @@ def _clear_all(scene):
 # S01 — HOOK QUESTION  [0.0 → 5.93s]
 # ═══════════════════════════════════════════════════════════════════════════════
 class S01HookQuestion(InteractiveScene):
+    CONFIG = {
+        "camera_config": {
+            "pixel_width": 1080,
+            "pixel_height": 1920,
+            "fps": 60,
+        },
+    }
     def construct(self):
         line1 = Tex(r"Why Lamine's", color=TEXT_C, font_size=72)
         line2a = Tex(r"trivela", color=PRIMARY, font_size=72)
@@ -54,6 +61,13 @@ class S01HookQuestion(InteractiveScene):
 # S02 — FOOT + DIRECTION  [5.93 → 12.47s]
 # ═══════════════════════════════════════════════════════════════════════════════
 class S02FootKick(InteractiveScene):
+    CONFIG = {
+        "camera_config": {
+            "pixel_width": 1080,
+            "pixel_height": 1920,
+            "fps": 60,
+        },
+    }
     def construct(self):
         t2a = Tex(r"Kick with the", color=TEXT_C, font_size=60)
         t2b = Tex(r"outside", color=PRIMARY, font_size=60)
@@ -98,6 +112,13 @@ class S02FootKick(InteractiveScene):
 # S03 — SPIN AXIS FLIP + EQUATION  [12.47 → 22.48s]
 # ═══════════════════════════════════════════════════════════════════════════════
 class S03SpinAxis(InteractiveScene):
+    CONFIG = {
+        "camera_config": {
+            "pixel_width": 1080,
+            "pixel_height": 1920,
+            "fps": 60,
+        },
+    }
     def construct(self):
         flip_line1 = Tex(r"You flip the", color=TEXT_C, font_size=64)
         flip_line2 = Tex(r"spin axis.", color=PRIMARY, font_size=80)
@@ -152,6 +173,13 @@ class S03SpinAxis(InteractiveScene):
 # S04 — MAGNUS EFFECT  [22.48 → 27.92s]
 # ═══════════════════════════════════════════════════════════════════════════════
 class S04MagnusEffect(InteractiveScene):
+    CONFIG = {
+        "camera_config": {
+            "pixel_width": 1080,
+            "pixel_height": 1920,
+            "fps": 60,
+        },
+    }
     def construct(self):
         magnus_title = Tex(r"The Magnus Effect.", color=PRIMARY, font_size=72)
         magnus_title.move_to(UP * 2.5)
@@ -197,6 +225,13 @@ class S04MagnusEffect(InteractiveScene):
 # S05 — NORMAL vs TRIVELA COMPARISON  [27.92 → 44.12s]
 # ═══════════════════════════════════════════════════════════════════════════════
 class S05Comparison(InteractiveScene):
+    CONFIG = {
+        "camera_config": {
+            "pixel_width": 1080,
+            "pixel_height": 1920,
+            "fps": 60,
+        },
+    }
     def construct(self):
         left_hdr  = Tex(r"Normal", color=TEXT_DIM, font_size=52).move_to(LEFT * 1.1 + UP * 3.5)
         right_hdr = Tex(r"Trivela", color=PRIMARY, font_size=52).move_to(RIGHT * 1.1 + UP * 3.5)
@@ -258,6 +293,13 @@ class S05Comparison(InteractiveScene):
 # S06 — NUMBERS : 70° + 10 REV/S  [44.12 → 56.94s]
 # ═══════════════════════════════════════════════════════════════════════════════
 class S06Numbers(InteractiveScene):
+    CONFIG = {
+        "camera_config": {
+            "pixel_width": 1080,
+            "pixel_height": 1920,
+            "fps": 60,
+        },
+    }
     def construct(self):
         center = ORIGIN + UP * 1.2
         axis_line = Line(center + LEFT * 2.0, center + RIGHT * 2.0,
@@ -318,6 +360,13 @@ class S06Numbers(InteractiveScene):
 # S07 — CONCLUSION + CTA  [56.94 → 68.32s]
 # ═══════════════════════════════════════════════════════════════════════════════
 class S07Conclusion(InteractiveScene):
+    CONFIG = {
+        "camera_config": {
+            "pixel_width": 1080,
+            "pixel_height": 1920,
+            "fps": 60,
+        },
+    }
     def construct(self):
         not_trick = Tex(r"This isn't", color=TEXT_C, font_size=60)
         not_trick2 = Tex(r"a trick shot.", color=TEXT_DIM, font_size=60)
