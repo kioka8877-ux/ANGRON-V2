@@ -80,6 +80,16 @@ if [[ "$ALL_SCENES" == "true" ]]; then
       Xvfb :99 -screen 0 1920x1080x24 2>/dev/null &
       sleep 2
 
+      # Portrait config pour manimgl (9:16 — 1080x1920)
+      cat > /workspace/custom_config.yml << 'CFEOF'
+camera_config:
+  pixel_height: 1920
+  pixel_width: 1080
+  fps: 60
+
+frame_height: 14.222222222222221
+CFEOF
+
       OUT_BASE='/workspace/${OUT_DIR}'
       STEM=\$(basename '/workspace/${SCENES}' .py)
 
