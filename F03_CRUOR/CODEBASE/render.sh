@@ -80,14 +80,12 @@ echo "=== [DEBUG] default_config.yml manimgl ==="
 find /usr/local/lib/python3.11/site-packages/manimlib -name "default_config.yml" -exec cat {} \;
 echo "=== [DEBUG] fin default_config ==="
 
-# Format nested camera_config (structure réelle manimgl)
+# Config portrait — clés officielles manimgl default_config.yml
 mkdir -p /root/.config/manim
 cat > /root/.config/manim/custom_config.yml << 'CFEOF'
-camera_config:
-  pixel_height: 1920
-  pixel_width: 1080
-  frame_rate: 60
-  frame_height: 14.222222222222221
+camera:
+  resolution: (1080, 1920)
+  fps: 60
 CFEOF
 
 # Aussi en CWD + répertoire scènes
@@ -150,3 +148,4 @@ fi
 # ─── Mode scène unique ────────────────────────────────────────────────────────
 echo "[CRUOR] Mode scène unique non utilisé en V2." >&2
 exit 1
+
