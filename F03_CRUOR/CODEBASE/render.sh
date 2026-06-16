@@ -75,47 +75,38 @@ if [[ "$ALL_SCENES" == "true" ]]; then
     -v "${WORKSPACE}:/workspace" \
     -e DISPLAY=:99 \
     "$DOCKER_IMAGE" \
-    bash -c "
+    bash -c '
       set -e
       Xvfb :99 -screen 0 1080x1920x24 2>/dev/null &
       sleep 2
 
-      # Portrait config manimgl — clés flat, 3 chemins (home + cwd + scènes)
-      for CFG_PATH in \
-          "/root/.config/manim/custom_config.yml" \
-          "/workspace/custom_config.yml" \
-          "/workspace/F03_CRUOR/CODEBASE/custom_config.yml"; do
-        mkdir -p "$(dirname "$CFG_PATH")"
-        cat > "$CFG_PATH" << 'CFEOF'
-pixel_width: 1080
-pixel_height: 1920
-frame_rate: 60
-frame_height: 14.222222222222221
-CFEOF
-      done
+      # Portrait config manimgl — 3 chemins, clés flat, sans variable loop
+      mkdir -p /root/.config/manim
+      printf "pixel_width: 1080\npixel_height: 1920\nframe_rate: 60\nframe_height: 14.222222222222221\n" \
+        > /root/.config/manim/custom_config.yml
+      cp /root/.config/manim/custom_config.yml /workspace/custom_config.yml
+      cp /root/.config/manim/custom_config.yml /workspace/F03_CRUOR/CODEBASE/custom_config.yml
 
-      OUT_BASE='/workspace/${OUT_DIR}'
-      STEM=\$(basename '/workspace/${SCENES}' .py)
-
+      OUT_BASE="/workspace/'"$OUT_DIR"'"
       while IFS= read -r SCENE_CLS; do
-        echo \"[CRUOR] Render \$SCENE_CLS...\"
+        echo "[CRUOR] Render $SCENE_CLS..."
         cd /workspace
-        manimgl '${SCENES}' \"\$SCENE_CLS\" -w 2>&1
+        manimgl '"'"''"$SCENES"''"'"' "$SCENE_CLS" -w 2>&1
 
-        MP4=\$(find /workspace/videos -name \"\${SCENE_CLS}.mp4\" 2>/dev/null | sort | tail -1)
-        if [[ -z \"\$MP4\" ]]; then
-          echo \"ERROR: aucun MP4 pour \$SCENE_CLS\" >&2
+        MP4=$(find /workspace/videos -name "${SCENE_CLS}.mp4" 2>/dev/null | sort | tail -1)
+        if [[ -z "$MP4" ]]; then
+          echo "ERROR: aucun MP4 pour $SCENE_CLS" >&2
           exit 2
         fi
-        cp \"\$MP4\" \"\${OUT_BASE}/\${SCENE_CLS}.mp4\"
-        echo \"[CRUOR] \$SCENE_CLS → \${OUT_BASE}/\${SCENE_CLS}.mp4\"
-      done < <(grep -oP '^class \K\w+(?=\(InteractiveScene\))' '/workspace/${SCENES}' | sort)
+        cp "$MP4" "${OUT_BASE}/${SCENE_CLS}.mp4"
+        echo "[CRUOR] $SCENE_CLS → ${OUT_BASE}/${SCENE_CLS}.mp4"
+      done < <(grep -oP '"'"'^class \K\w+(?=\(InteractiveScene\))'"'"' '"'"'/workspace/'"$SCENES"''"'"' | sort)
 
       python3 /workspace/F03_CRUOR/CODEBASE/stage.py \
-        --in-dir  \"\$OUT_BASE\" \
-        --output  '/workspace/${STAGED}' 2>&1
-      echo '[CRUOR] Assemblage terminé.'
-    " 2>&1 | tee "$ERROR_LOG"
+        --in-dir  "$OUT_BASE" \
+        --output  "/workspace/'"$STAGED"'" 2>&1
+      echo "[CRUOR] Assemblage terminé."
+    ' 2>&1 | tee "$ERROR_LOG"
 
   DOCKER_EXIT="${PIPESTATUS[0]}"
   END_TS=$(date +%s)
@@ -173,22 +164,27 @@ docker run --rm \
   -v "${WORKSPACE}:/workspace" \
   -e DISPLAY=:99 \
   "$DOCKER_IMAGE" \
-  bash -c "
+  bash -c '
     set -e
     Xvfb :99 -screen 0 1080x1920x24 2>/dev/null &
     sleep 2
 
-    cd /workspace
-    manimgl '${SCENES}' '${SCENE_CLASS}' -w 2>&1
+    mkdir -p /root/.config/manim
+    printf "pixel_width: 1080\npixel_height: 1920\nframe_rate: 60\nframe_height: 14.222222222222221\n" \
+      > /root/.config/manim/custom_config.yml
+    cp /root/.config/manim/custom_config.yml /workspace/custom_config.yml
 
-    MP4=\$(find /workspace/videos -name '${SCENE_CLASS}.mp4' 2>/dev/null | sort | tail -1)
-    if [[ -z \"\$MP4\" ]]; then
-      echo 'ERROR: aucun MP4 trouvé' >&2
+    cd /workspace
+    manimgl '"'"''"$SCENES"''"'"' '"'"''"$SCENE_CLASS"''"'"' -w 2>&1
+
+    MP4=$(find /workspace/videos -name '"'"''"$SCENE_CLASS"'.mp4'"'"' 2>/dev/null | sort | tail -1)
+    if [[ -z "$MP4" ]]; then
+      echo "ERROR: aucun MP4 trouvé" >&2
       exit 2
     fi
-    cp \"\$MP4\" '/workspace/${OUTPUT}'
-    echo \"MP4 : \$MP4 → /workspace/${OUTPUT}\"
-  " 2>&1 | tee "$ERROR_LOG"
+    cp "$MP4" '"'"'/workspace/'"$OUTPUT"''"'"'
+    echo "MP4 : $MP4 → /workspace/'"$OUTPUT"'"
+  ' 2>&1 | tee "$ERROR_LOG"
 
 DOCKER_EXIT="${PIPESTATUS[0]}"
 END_TS=$(date +%s)
