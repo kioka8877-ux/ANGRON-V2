@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
 set -e
+
+# Install bold sans-serif font for Text() rendering
+apt-get install -y --no-install-recommends fonts-liberation > /dev/null 2>&1 || true
+fc-cache -fv > /dev/null 2>&1 || true
+
 Xvfb :99 -screen 0 1080x1920x24 2>/dev/null &
 sleep 2
 
-printf 'camera:\n  resolution: (1080, 1920)\n  fps: 60\n' > /tmp/angron_portrait.yml
+printf 'camera:
+  resolution: (1080, 1920)
+  fps: 60
+' > /tmp/angron_portrait.yml
 cp /tmp/angron_portrait.yml /workspace/custom_config.yml
 echo "[CRUOR] Config portrait OK"
 
@@ -24,8 +32,6 @@ while IFS= read -r SCENE_CLS; do
   echo "[CRUOR] $SCENE_CLS -> ${OUT_BASE}/${SCENE_CLS}.mp4"
 done < <(grep -oP '^class \K\w+(?=\(InteractiveScene\))' "/workspace/${MANIMGL_SCENES}" | sort)
 
-python3 /workspace/F03_CRUOR/CODEBASE/stage.py \
-  --in-dir  "$OUT_BASE" \
-  --output  "/workspace/${MANIMGL_STAGED}" 2>&1
+python3 /workspace/F03_CRUOR/CODEBASE/stage.py   --in-dir  "$OUT_BASE"   --output  "/workspace/${MANIMGL_STAGED}" 2>&1
 
 echo "[CRUOR] Assemblage OK"
