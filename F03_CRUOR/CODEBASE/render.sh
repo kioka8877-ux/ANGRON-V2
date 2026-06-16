@@ -77,18 +77,22 @@ if [[ "$ALL_SCENES" == "true" ]]; then
     "$DOCKER_IMAGE" \
     bash -c "
       set -e
-      Xvfb :99 -screen 0 1920x1080x24 2>/dev/null &
+      Xvfb :99 -screen 0 1080x1920x24 2>/dev/null &
       sleep 2
 
-      # Portrait config pour manimgl (9:16 — 1080x1920)
-      cat > /workspace/custom_config.yml << 'CFEOF'
-camera_config:
-  pixel_height: 1920
-  pixel_width: 1080
-  fps: 60
-
+      # Portrait config manimgl — clés flat, 3 chemins (home + cwd + scènes)
+      for CFG_PATH in \
+          "/root/.config/manim/custom_config.yml" \
+          "/workspace/custom_config.yml" \
+          "/workspace/F03_CRUOR/CODEBASE/custom_config.yml"; do
+        mkdir -p "$(dirname "$CFG_PATH")"
+        cat > "$CFG_PATH" << 'CFEOF'
+pixel_width: 1080
+pixel_height: 1920
+frame_rate: 60
 frame_height: 14.222222222222221
 CFEOF
+      done
 
       OUT_BASE='/workspace/${OUT_DIR}'
       STEM=\$(basename '/workspace/${SCENES}' .py)
@@ -171,7 +175,7 @@ docker run --rm \
   "$DOCKER_IMAGE" \
   bash -c "
     set -e
-    Xvfb :99 -screen 0 1920x1080x24 2>/dev/null &
+    Xvfb :99 -screen 0 1080x1920x24 2>/dev/null &
     sleep 2
 
     cd /workspace
