@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# render.sh — F03_CRUOR V2 : render manimgl par scène + assemblage via stage.py.
+# render.sh — F03_CRUOR V2 : render manimgl par scene + assemblage via stage.py.
 
 set -euo pipefail
 
@@ -46,7 +46,7 @@ if [[ "$ALL_SCENES" == "true" ]]; then
   DONE_FILE="$OUT_DIR/DONE.txt"
   ERROR_LOG="$OUT_DIR/error.log"
 
-  echo "[CRUOR] Render toutes scènes manimgl + assemblage..."
+  echo "[CRUOR] Render toutes scenes manimgl + assemblage..."
   echo "  Scenes  : $SCENES"
   echo "  Out dir : $OUT_DIR"
   echo "  Staged  : $STAGED"
@@ -54,11 +54,11 @@ if [[ "$ALL_SCENES" == "true" ]]; then
 
   SCENE_CLASSES=$(grep -oP '^class \K\w+(?=\(InteractiveScene\))' "$SCENES" | sort || true)
   if [[ -z "$SCENE_CLASSES" ]]; then
-    echo "[CRUOR] ERREUR : aucune classe InteractiveScene trouvée dans $SCENES" >&2
+    echo "[CRUOR] ERREUR : aucune classe InteractiveScene trouvee dans $SCENES" >&2
     exit 1
   fi
 
-  echo "[CRUOR] Scènes détectées :"
+  echo "[CRUOR] Scenes detectees :"
   echo "$SCENE_CLASSES" | while read -r cls; do echo "  - $cls"; done
 
   START_TS=$(date +%s)
@@ -76,10 +76,9 @@ set -e
 Xvfb :99 -screen 0 1080x1920x24 2>/dev/null &
 sleep 2
 
-# Portrait config — printf evite conflits heredocs imbriques
 printf 'camera:\n  resolution: (1080, 1920)\n  fps: 60\n' > /tmp/angron_portrait.yml
 cp /tmp/angron_portrait.yml /workspace/custom_config.yml
-echo "[CRUOR] Config portrait actif: $(cat /tmp/angron_portrait.yml | tr '\n' '|')"
+echo "[CRUOR] Config portrait: $(cat /tmp/angron_portrait.yml | tr '\n' '|')"
 
 OUT_BASE="/workspace/${MANIMGL_OUT_DIR}"
 
@@ -101,7 +100,7 @@ done < <(grep -oP '^class \K\w+(?=\(InteractiveScene\))' "/workspace/${MANIMGL_S
 python3 /workspace/F03_CRUOR/CODEBASE/stage.py \
   --in-dir  "$OUT_BASE" \
   --output  "/workspace/${MANIMGL_STAGED}" 2>&1
-echo "[CRUOR] Assemblage terminé."
+echo "[CRUOR] Assemblage OK"
 DOCKEREOF
 
   DOCKER_EXIT="${PIPESTATUS[0]}"
@@ -130,8 +129,5 @@ EOF
   exit 0
 fi
 
-# ─── Mode scène unique ────────────────────────────────────────────────────────
-echo "[CRUOR] Mode scène unique non utilisé en V2." >&2
+echo "[CRUOR] Mode scene unique non utilise en V2." >&2
 exit 1
-
-
