@@ -44,7 +44,6 @@ if [[ "$ALL_SCENES" == "true" ]]; then
   fi
   mkdir -p "$OUT_DIR"
   DONE_FILE="$OUT_DIR/DONE.txt"
-  ERROR_LOG="$OUT_DIR/error.log"
 
   echo "[CRUOR] Render toutes scenes manimgl + assemblage..."
   echo "  Scenes  : $SCENES"
@@ -63,7 +62,7 @@ if [[ "$ALL_SCENES" == "true" ]]; then
 
   START_TS=$(date +%s)
 
-  docker run -i --rm \
+  docker run --rm \
     --name "angron_cruor_all_$$" \
     -v "${WORKSPACE}:/workspace" \
     -e DISPLAY=:99 \
@@ -71,44 +70,14 @@ if [[ "$ALL_SCENES" == "true" ]]; then
     -e MANIMGL_STAGED="${STAGED}" \
     -e MANIMGL_SCENES="${SCENES}" \
     "$DOCKER_IMAGE" \
-    bash << 'DOCKEREOF'
-set -e
-Xvfb :99 -screen 0 1080x1920x24 2>/dev/null &
-sleep 2
+    bash /workspace/F03_CRUOR/CODEBASE/docker_render_inner.sh
 
-printf 'camera:\n  resolution: (1080, 1920)\n  fps: 60\n' > /tmp/angron_portrait.yml
-cp /tmp/angron_portrait.yml /workspace/custom_config.yml
-echo "[CRUOR] Config portrait: $(cat /tmp/angron_portrait.yml | tr '\n' '|')"
-
-OUT_BASE="/workspace/${MANIMGL_OUT_DIR}"
-
-while IFS= read -r SCENE_CLS; do
-  echo "[CRUOR] Render $SCENE_CLS..."
-  cd /workspace
-  manimgl --config_file /tmp/angron_portrait.yml "${MANIMGL_SCENES}" "$SCENE_CLS" -w 2>&1
-
-  MP4=$(find /workspace/videos -name "${SCENE_CLS}.mp4" 2>/dev/null | sort | tail -1)
-  if [[ -z "$MP4" ]]; then
-    echo "ERROR: aucun MP4 pour $SCENE_CLS" >&2
-    exit 2
-  fi
-  echo "[DEBUG] Dimensions $SCENE_CLS : $(ffprobe -v quiet -select_streams v:0 -show_entries stream=width,height -of csv=p=0 "$MP4" 2>/dev/null)"
-  cp "$MP4" "${OUT_BASE}/${SCENE_CLS}.mp4"
-  echo "[CRUOR] $SCENE_CLS -> ${OUT_BASE}/${SCENE_CLS}.mp4"
-done < <(grep -oP '^class \K\w+(?=\(InteractiveScene\))' "/workspace/${MANIMGL_SCENES}" | sort)
-
-python3 /workspace/F03_CRUOR/CODEBASE/stage.py \
-  --in-dir  "$OUT_BASE" \
-  --output  "/workspace/${MANIMGL_STAGED}" 2>&1
-echo "[CRUOR] Assemblage OK"
-DOCKEREOF
-
-  DOCKER_EXIT="${PIPESTATUS[0]}"
+  DOCKER_EXIT=$?
   END_TS=$(date +%s)
   RENDER_TIME=$(( END_TS - START_TS ))
 
   if [[ "$DOCKER_EXIT" -ne 0 ]]; then
-    echo "[CRUOR] RENDER FAILED (exit $DOCKER_EXIT) — voir $ERROR_LOG" >&2
+    echo "[CRUOR] RENDER FAILED (exit $DOCKER_EXIT)" >&2
     exit "$DOCKER_EXIT"
   fi
 
