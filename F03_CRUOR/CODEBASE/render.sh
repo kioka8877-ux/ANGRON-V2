@@ -76,32 +76,17 @@ set -e
 Xvfb :99 -screen 0 1080x1920x24 2>/dev/null &
 sleep 2
 
-echo "=== [DEBUG] default_config.yml manimgl ==="
-find /usr/local/lib/python3.11/site-packages/manimlib -name "default_config.yml" -exec cat {} \;
-echo "=== [DEBUG] fin default_config ==="
-
-# Config portrait — clés officielles manimgl default_config.yml
-mkdir -p /root/.config/manim
-cat > /root/.config/manim/custom_config.yml << 'CFEOF'
-camera:
-  resolution: (1080, 1920)
-  fps: 60
-CFEOF
-
-# Aussi en CWD + répertoire scènes
-cp /root/.config/manim/custom_config.yml /workspace/custom_config.yml
-cp /root/.config/manim/custom_config.yml /workspace/F03_CRUOR/CODEBASE/custom_config.yml
-
-echo "=== [DEBUG] custom_config.yml écrit ==="
-cat /root/.config/manim/custom_config.yml
-echo "=== [DEBUG] fin custom_config ==="
+# Portrait config — printf evite conflits heredocs imbriques
+printf 'camera:\n  resolution: (1080, 1920)\n  fps: 60\n' > /tmp/angron_portrait.yml
+cp /tmp/angron_portrait.yml /workspace/custom_config.yml
+echo "[CRUOR] Config portrait actif: $(cat /tmp/angron_portrait.yml | tr '\n' '|')"
 
 OUT_BASE="/workspace/${MANIMGL_OUT_DIR}"
 
 while IFS= read -r SCENE_CLS; do
   echo "[CRUOR] Render $SCENE_CLS..."
   cd /workspace
-  manimgl "${MANIMGL_SCENES}" "$SCENE_CLS" -w 2>&1
+  manimgl --config_file /tmp/angron_portrait.yml "${MANIMGL_SCENES}" "$SCENE_CLS" -w 2>&1
 
   MP4=$(find /workspace/videos -name "${SCENE_CLS}.mp4" 2>/dev/null | sort | tail -1)
   if [[ -z "$MP4" ]]; then
@@ -148,4 +133,5 @@ fi
 # ─── Mode scène unique ────────────────────────────────────────────────────────
 echo "[CRUOR] Mode scène unique non utilisé en V2." >&2
 exit 1
+
 
