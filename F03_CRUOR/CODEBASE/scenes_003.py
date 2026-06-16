@@ -108,11 +108,11 @@ class S03SpinAxis(InteractiveScene):
         self.play(Write(flip_line2), run_time=0.8)
 
         cw_label  = Tex(r"Normal", color=TEXT_DIM, font_size=36).move_to(LEFT * 1.4 + DOWN * 0.3)
-        cw_tip_text = Tex(r"$\leftarrow$", color=HIGHLIGHT, font_size=60)
+        cw_tip_text = Tex(r"\leftarrow", color=HIGHLIGHT, font_size=60)
         cw_tip_text.move_to(LEFT * 1.4 + DOWN * 1.4)
 
         ccw_label = Tex(r"Trivela", color=PRIMARY, font_size=36).move_to(RIGHT * 1.4 + DOWN * 0.3)
-        ccw_tip_text = Tex(r"$\rightarrow$", color=PRIMARY, font_size=60)
+        ccw_tip_text = Tex(r"\rightarrow", color=PRIMARY, font_size=60)
         ccw_tip_text.move_to(RIGHT * 1.4 + DOWN * 1.4)
 
         sep = DashedLine(UP * 0.2, DOWN * 2.5, color=TEXT_DIM, dash_length=0.12)
@@ -132,7 +132,7 @@ class S03SpinAxis(InteractiveScene):
         )
         self.wait(0.5)
 
-        eq_intro = Tex(r"$F = \rho \cdot r \cdot v \times \omega$",
+        eq_intro = Tex(r"F = \rho \cdot r \cdot v \times \omega",
                        color=SECONDARY, font_size=72)
         eq_intro.move_to(DOWN * 3.2)
 
@@ -270,7 +270,7 @@ class S06Numbers(InteractiveScene):
                         color=SECONDARY, stroke_width=2)
         arc_angle.move_to(center)
 
-        deg_label = Tex(r"$70^\circ$", color=SECONDARY, font_size=64)
+        deg_label = Tex(r"70^\circ", color=SECONDARY, font_size=64)
         deg_label.move_to(center + RIGHT * 0.9 + UP * 0.5)
 
         off_axis = Tex(r"off-axis", color=PRIMARY, font_size=52)
