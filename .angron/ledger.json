@@ -14,7 +14,7 @@
     "mode": null,
     "concept": null,
     "format": null,
-    "etape": "STATE_6_GATE",
+    "etape": "STATE_8",
     "hook": {
       "source_url": null,
       "hook_ready_path": null,
@@ -28,7 +28,7 @@
       "scenes_py": null,
       "renders": [],
       "staged": "F03_CRUOR/OUT/cruor_render_004.mp4",
-      "nails_out": null,
+      "nails_out": "F04_NAILS/OUT/nails_out_004.mp4",
       "final": null
     },
     "validations": {
@@ -37,7 +37,7 @@
       "render_brut": false
     },
     "debut": null,
-    "derniere_mise_a_jour": "2026-06-17T04:41:20Z"
+    "derniere_mise_a_jour": "2026-06-17T04:44:52Z"
   },
   "historique": [
     {
