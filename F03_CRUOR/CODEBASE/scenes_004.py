@@ -360,10 +360,6 @@ class S07RevolutionsScene(InteractiveScene):
         val_triv = T("10", color=SECONDARY, size=28).next_to(bar_triv, UP, buff=0.15)
         x2_badge = T("× 2", color=ACCENT, size=34).move_to(bar_base_y + UP * 0.8)
 
-        self.play(
-            FadeIn(bar_std.scale(0), target_position=bar_std.get_bottom()),
-            run_time=0.01
-        )
         # Barres grandissent depuis le bas
         bar_std_start  = bar_std.copy().set_height(0.05, stretch=True).move_to(bar_std.get_bottom())
         bar_triv_start = bar_triv.copy().set_height(0.05, stretch=True).move_to(bar_triv.get_bottom())
@@ -503,3 +499,4 @@ class S09FinalScene(InteractiveScene):
         self.play(ShowCreation(cta_box), FadeIn(cta_text), run_time=0.4)
         self.wait(0.97)   # total 3.12s
         self.play(*[FadeOut(m) for m in list(self.mobjects)], run_time=0.3)
+
