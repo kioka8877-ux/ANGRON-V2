@@ -7,13 +7,14 @@
   "modes_disponibles": [
     "math_script",
     "math_no_script",
-    "hook"
+    "hook",
+    "image_bg"
   ],
   "projet_actif": {
-    "id": null,
-    "mode": null,
-    "concept": null,
-    "format": null,
+    "id": "004",
+    "mode": "image_bg",
+    "concept": "Lamine Yamal trivela physics",
+    "format": "short",
     "etape": "STATE_8",
     "hook": {
       "source_url": null,
@@ -37,7 +38,7 @@
       "render_brut": false
     },
     "debut": null,
-    "derniere_mise_a_jour": "2026-06-17T04:44:52Z"
+    "derniere_mise_a_jour": "2026-06-17T04:55:40Z"
   },
   "historique": [
     {
