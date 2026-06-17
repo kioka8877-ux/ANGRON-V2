@@ -14,7 +14,7 @@
     "mode": null,
     "concept": null,
     "format": null,
-    "etape": "INIT",
+    "etape": "STATE_6_GATE",
     "hook": {
       "source_url": null,
       "hook_ready_path": null,
@@ -27,7 +27,7 @@
       "timestamps": null,
       "scenes_py": null,
       "renders": [],
-      "staged": null,
+      "staged": "F03_CRUOR/OUT/cruor_render_004.mp4",
       "nails_out": null,
       "final": null
     },
@@ -37,7 +37,7 @@
       "render_brut": false
     },
     "debut": null,
-    "derniere_mise_a_jour": "2026-06-16T13:35:33Z"
+    "derniere_mise_a_jour": "2026-06-17T04:41:20Z"
   },
   "historique": [
     {
