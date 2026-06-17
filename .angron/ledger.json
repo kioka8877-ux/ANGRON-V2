@@ -11,11 +11,11 @@
     "image_bg"
   ],
   "projet_actif": {
-    "id": "004",
-    "mode": "image_bg",
-    "concept": "Lamine Yamal trivela physics",
-    "format": "short",
-    "etape": "STATE_8",
+    "id": null,
+    "mode": null,
+    "concept": null,
+    "format": null,
+    "etape": "INIT",
     "hook": {
       "source_url": null,
       "hook_ready_path": null,
@@ -28,8 +28,8 @@
       "timestamps": null,
       "scenes_py": null,
       "renders": [],
-      "staged": "F03_CRUOR/OUT/cruor_render_004.mp4",
-      "nails_out": "F04_NAILS/OUT/nails_out_004.mp4",
+      "staged": null,
+      "nails_out": null,
       "final": null
     },
     "validations": {
@@ -38,7 +38,7 @@
       "render_brut": false
     },
     "debut": null,
-    "derniere_mise_a_jour": "2026-06-17T04:55:40Z"
+    "derniere_mise_a_jour": "2026-06-17T04:56:58Z"
   },
   "historique": [
     {
@@ -72,12 +72,20 @@
       "mode": "hook",
       "date": null,
       "final": "F05_NUCERIA/OUT/youtube_short_003.mp4"
+    },
+    {
+      "id": "004",
+      "concept": "Lamine Yamal trivela physics",
+      "format": "short",
+      "mode": "image_bg",
+      "date": null,
+      "final": "F05_NUCERIA/OUT/youtube_short_004.mp4"
     }
   ],
   "stats": {
-    "videos_produites": 4,
+    "videos_produites": 5,
     "videos_uploadees": 1,
-    "cycles_complets": 4
+    "cycles_complets": 5
   },
   "instructions_cold_start": [
     "1. git clone https://github.com/kioka8877-ux/ANGRON-V2",

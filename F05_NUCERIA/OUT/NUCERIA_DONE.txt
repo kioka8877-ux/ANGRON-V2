@@ -1,6 +1,6 @@
 NUCERIA_DONE
-concept=Pourquoi la trivela de Lamine Yamal est plus spectaculaire que vous ne le pensez
+concept=Lamine Yamal trivela physics
 format=short
-output=F05_NUCERIA/OUT/youtube_short_003.mp4
+output=F05_NUCERIA/OUT/youtube_short_004.mp4
 qa=OK
-timestamp=2026-06-16T13:35:33.235781
+timestamp=2026-06-17T04:56:58.715526
